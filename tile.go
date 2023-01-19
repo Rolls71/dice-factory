@@ -7,10 +7,14 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+// TILE
+
 type Tile struct {
 	name  string
 	image *ebiten.Image
 }
+
+// GAME FUNCTIONS
 
 func (g *Game) InitTiles() {
 	//replace with images later

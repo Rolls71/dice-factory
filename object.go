@@ -8,12 +8,22 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
+// OBJECT
+
 type Object struct {
-	name  string
-	image *ebiten.Image
-	x     int
-	y     int
+	name       string
+	image      *ebiten.Image
+	x          int
+	y          int
+	trackMouse bool //default false for constructor
 }
+
+func (o *Object) MoveTo(x, y int) {
+	o.x = x
+	o.y = y
+}
+
+// GAME FUNCTIONS
 
 func (g *Game) InitObjects() {
 	var img *ebiten.Image
@@ -24,10 +34,19 @@ func (g *Game) InitObjects() {
 	}
 
 	g.objects = append(g.objects, Object{
-		name:  "d6",
-		image: img,
-		x:     (screenWidth / 2) / tileSize,
-		y:     (screenHeight / 2) / tileSize,
+		name:       "d6",
+		image:      img,
+		x:          (screenWidth / 2) / tileSize,
+		y:          (screenHeight / 2) / tileSize,
+		trackMouse: false,
+	})
+
+	g.objects = append(g.objects, Object{
+		name:       "d6too",
+		image:      img,
+		x:          (screenWidth / 3) / tileSize,
+		y:          (screenHeight / 3) / tileSize,
+		trackMouse: false,
 	})
 }
 
