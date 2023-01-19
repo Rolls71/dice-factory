@@ -1,8 +1,6 @@
 package main
 
 import (
-	//"image"
-	"fmt"
 	"image/color"
 	_ "image/png"
 	"log"
@@ -13,39 +11,56 @@ import (
 
 // CONSTANTS
 const (
-	screenWidth  = 640
-	screenHeight = 480
+	screenWidth  int = 640
+	screenHeight int = 480
 )
 
 const (
-	tileSize = 32
+	tileSize int = 32
 )
 
 const (
-	stageSizeX = 5
-	stageSizeY = 5
+	stageSizeX int = screenWidth / tileSize
+	stageSizeY int = screenHeight / tileSize
 )
 
 // VARIABLES
-var basicStage [stageSizeY][stageSizeX]int
-
-var basicGrassTile *ebiten.Image
-
-// INITIALISATION
-func init() {
-
-}
 
 // OBJECTS
 
 // TILES
+type Tile struct {
+	name  string
+	image *ebiten.Image
+}
+
+const tileCount = 1
+
+var tiles []Tile
+
+func initTiles() {
+	//replace with images later
+	tempGrass := ebiten.NewImage(tileSize, tileSize)
+	tempGrass.Fill(color.RGBA{0, 0xFF, 0, 0xFF})
+
+	basicGrass := Tile{
+		name:  "basicGrass",
+		image: tempGrass,
+	}
+
+	tiles = []Tile{basicGrass}
+}
+
+func GetTile(index int) *ebiten.Image {
+	return tiles[index].image
+}
+
 func (g Game) DrawTiles(screen *ebiten.Image) {
-	fmt.Println(len(g.stage[0]))
-	for y := 0; y < len(g.stage); y++ {
-		for x := 0; x < len(g.stage[y]); x++ {
+	for y := 0; y < stageSizeY; y++ {
+		for x := 0; x < stageSizeX; x++ {
 			options := &ebiten.DrawImageOptions{}
 			options.GeoM.Translate(float64(x*tileSize), float64(y*tileSize))
-			screen.DrawImage(basicGrassTile, options)
+			screen.DrawImage(GetTile(g.tileStage[y][x]), options)
 		}
 	}
 
@@ -53,12 +68,15 @@ func (g Game) DrawTiles(screen *ebiten.Image) {
 
 // GAME
 type Game struct {
-	stage [stageSizeY][stageSizeX]int
+	tileStage   [stageSizeY][stageSizeX]int
+	objectStage [stageSizeY][stageSizeX]int
 }
 
 func NewGame() *Game {
 	return &Game{
-		stage: basicStage,
+		// return a 2D array of zeroes
+		tileStage:   [stageSizeY][stageSizeX]int{},
+		objectStage: [stageSizeY][stageSizeX]int{},
 	}
 }
 
@@ -75,15 +93,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (_screenWidth, _screenHei
 }
 
 func main() {
-	basicStage = [stageSizeY][stageSizeX]int{
-		{0, 0, 0},
-		{0, 0, 0},
-		{0, 0, 0},
-	}
-
-	basicGrassTile = ebiten.NewImage(tileSize, tileSize)
-	basicGrassTile.Fill(color.RGBA{0, 0xFF, 0, 0xFF})
-
+	initTiles()
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Hello, World!")
 	if err := ebiten.RunGame(&Game{}); err != nil {
