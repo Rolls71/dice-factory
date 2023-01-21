@@ -34,29 +34,23 @@ func (g *Game) GetObjectsAt(x, y int) (bool, []int) {
 	return (len(objectIndices) > 0), objectIndices
 }
 
-// InitObjects initialises any Objects that should start on-screen.
-// Will be converted to take array of objects after Object.New() is created.
-func (g *Game) InitObjects() {
-	var img *ebiten.Image
-	var err error
-	img, _, err = ebitenutil.NewImageFromFile("images/d6_6.png")
+// NewObject constructs a new Object with given parameters.
+// New Object is appended to the Game's Object list.
+func (g *Game) NewObject(
+	objectName,
+	imageName string,
+	x, y int,
+) {
+	path := "images/" + imageName
+	img, _, err := ebitenutil.NewImageFromFile(path)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	g.objects = append(g.objects, Object{
-		name:       "d6",
+		name:       objectName,
 		image:      img,
-		x:          (screenWidth / 2) / tileSize,
-		y:          (screenHeight / 2) / tileSize,
-		trackMouse: false,
-	})
-
-	g.objects = append(g.objects, Object{
-		name:       "d6too",
-		image:      img,
-		x:          (screenWidth / 3) / tileSize,
-		y:          (screenHeight / 3) / tileSize,
+		x:          x,
+		y:          y,
 		trackMouse: false,
 	})
 }

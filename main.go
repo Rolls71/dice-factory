@@ -39,7 +39,8 @@ func NewGame() *Game {
 	}
 
 	game.InitTiles()
-	game.InitObjects()
+	game.NewObject("die_1", "d6_6.png", 3, 3)
+	game.NewObject("die_2", "d6_6.png", 5, 6)
 
 	return &game
 }
