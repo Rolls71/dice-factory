@@ -26,40 +26,36 @@ const (
 
 // INPUT HANDLING
 
-// generate ghost of object before moving
-
-func (g *Game) ClickedObject() (bool, int) {
+func (g *Game) GetCursorCoordinates() (int, int) {
 	x, y := ebiten.CursorPosition()
 	x /= tileSize
 	y /= tileSize
-	for i, object := range g.objects {
-		if object.x == x &&
-			object.y == y {
-			return true, i
-		}
-	}
-	return false, 0
+	return x, y
 }
 
 func (g *Game) UpdateCursor() {
 
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) &&
 		!g.isDragging {
-		isObject, i := g.ClickedObject()
+		x, y := g.GetCursorCoordinates()
+		isObject, objectIndices := g.GetObjectsAt(x, y)
 		if isObject {
-			g.objects[i].trackMouse = true
+			g.objects[objectIndices[0]].trackMouse = true
 			g.isDragging = true
 		}
 	}
 
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) &&
 		g.isDragging {
-		x, y := ebiten.CursorPosition()
+		x, y := g.GetCursorCoordinates()
+		isObject, _ := g.GetObjectsAt(x, y)
 		for i, object := range g.objects {
 			if object.trackMouse {
 				g.objects[i].trackMouse = false
-				g.objects[i].MoveTo(x/tileSize, y/tileSize)
 				g.isDragging = false
+				if !isObject {
+					g.objects[i].MoveTo(x, y)
+				}
 				break
 			}
 		}

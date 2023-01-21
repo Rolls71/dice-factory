@@ -23,6 +23,17 @@ func (o *Object) MoveTo(x, y int) {
 	o.y = y
 }
 
+func (g *Game) GetObjectsAt(x, y int) (bool, []int) {
+	var objectIndices []int
+	for index, object := range g.objects {
+		if object.x == x &&
+			object.y == y {
+			objectIndices = append(objectIndices, index)
+		}
+	}
+	return (len(objectIndices) > 0), objectIndices
+}
+
 // GAME FUNCTIONS
 
 func (g *Game) InitObjects() {
@@ -53,7 +64,12 @@ func (g *Game) InitObjects() {
 func (g *Game) DrawObjects(screen *ebiten.Image) {
 	for _, object := range g.objects {
 		options := &ebiten.DrawImageOptions{}
-		options.GeoM.Translate(float64(object.x*tileSize), float64(object.y*tileSize))
+		if object.trackMouse {
+			x, y := ebiten.CursorPosition()
+			options.GeoM.Translate(float64(x), float64(y))
+		} else {
+			options.GeoM.Translate(float64(object.x*tileSize), float64(object.y*tileSize))
+		}
 		screen.DrawImage(object.image, options)
 	}
 }
