@@ -5,6 +5,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
+// GetCursorCoordinates returns the tile coordinate that the cursor is within.
 func (g *Game) GetCursorCoordinates() (int, int) {
 	x, y := ebiten.CursorPosition()
 	x /= tileSize
@@ -12,8 +13,15 @@ func (g *Game) GetCursorCoordinates() (int, int) {
 	return x, y
 }
 
+// UpdateCursor runs updateOnMouseDown and updateOnMouseUp
 func (g *Game) UpdateCursor() {
+	g.updateOnMouseDown()
+	g.updateOnMouseUp()
+}
 
+// updateOnMouseDown tests if an Object has been selected.
+// The Game's isDragging flag and the Object's trackMouse flag is set to true.
+func (g *Game) updateOnMouseDown() {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) &&
 		!g.isDragging {
 		x, y := g.GetCursorCoordinates()
@@ -23,7 +31,11 @@ func (g *Game) UpdateCursor() {
 			g.isDragging = true
 		}
 	}
+}
 
+// updateOnMouseUp tests if a dragged object has been released.
+// The Game's isDragging flag and the Object's trackMouse flag is set to false.
+func (g *Game) updateOnMouseUp() {
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) &&
 		g.isDragging {
 		x, y := g.GetCursorCoordinates()

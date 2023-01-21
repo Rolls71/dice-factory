@@ -8,8 +8,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
-// OBJECT
-
 type Object struct {
 	name       string
 	image      *ebiten.Image
@@ -23,6 +21,8 @@ func (o *Object) MoveTo(x, y int) {
 	o.y = y
 }
 
+// GetObjectsAt returns true if there is an Object at the given coordinates
+// An array of every Object at that coordinate is also returned.
 func (g *Game) GetObjectsAt(x, y int) (bool, []int) {
 	var objectIndices []int
 	for index, object := range g.objects {
@@ -34,8 +34,8 @@ func (g *Game) GetObjectsAt(x, y int) (bool, []int) {
 	return (len(objectIndices) > 0), objectIndices
 }
 
-// GAME FUNCTIONS
-
+// InitObjects initialises any Objects that should start on-screen.
+// Will be converted to take array of objects after Object.New() is created.
 func (g *Game) InitObjects() {
 	var img *ebiten.Image
 	var err error
@@ -61,6 +61,9 @@ func (g *Game) InitObjects() {
 	})
 }
 
+// DrawObjects will draw every Tile in the game's list of objects.
+// Objects are drawn on their stored grid coordinate.
+// An Object flagged with trackMouse will be drawn attached to cursor instead.
 func (g *Game) DrawObjects(screen *ebiten.Image) {
 	for _, object := range g.objects {
 		options := &ebiten.DrawImageOptions{}
@@ -68,7 +71,9 @@ func (g *Game) DrawObjects(screen *ebiten.Image) {
 			x, y := ebiten.CursorPosition()
 			options.GeoM.Translate(float64(x), float64(y))
 		} else {
-			options.GeoM.Translate(float64(object.x*tileSize), float64(object.y*tileSize))
+			options.GeoM.Translate(
+				float64(object.x*tileSize),
+				float64(object.y*tileSize))
 		}
 		screen.DrawImage(object.image, options)
 	}

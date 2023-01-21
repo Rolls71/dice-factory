@@ -7,15 +7,13 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// TILE
-
 type Tile struct {
 	name  string
 	image *ebiten.Image
 }
 
-// GAME FUNCTIONS
-
+// InitTiles initialises every tile on-screen.
+// Will be converted to take a TileArray after Tile.New() is created.
 func (g *Game) InitTiles() {
 	//replace with images later
 	tempGrass := ebiten.NewImage(tileSize, tileSize)
@@ -30,6 +28,8 @@ func (g *Game) InitTiles() {
 
 }
 
+// DrawTiles will draw every Tile in the game's list of objects.
+// Tiles are drawn on their stored grid coordinate.
 func (g *Game) DrawTiles(screen *ebiten.Image) {
 	for y := 0; y < stageSizeY; y++ {
 		for x := 0; x < stageSizeX; x++ {

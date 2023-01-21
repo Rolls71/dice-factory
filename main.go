@@ -7,8 +7,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// CONSTANTS
-
 const (
 	screenWidth  int = 640
 	screenHeight int = 480
@@ -23,8 +21,6 @@ const (
 	stageSizeY int = screenHeight / tileSize
 )
 
-// GAME
-
 type Game struct {
 	tileStage  [stageSizeY][stageSizeX]int
 	tileSet    []Tile
@@ -32,6 +28,8 @@ type Game struct {
 	isDragging bool
 }
 
+// NewGame constructs and returns a Game struct.
+// Object and Tile initialisation functions are called after construction.
 func NewGame() *Game {
 	game := Game{
 		tileStage:  [stageSizeY][stageSizeX]int{},
@@ -56,7 +54,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.DrawObjects(screen)
 }
 
-func (g *Game) Layout(outsideWidth, outsideHeight int) (_screenWidth, _screenHeight int) {
+func (g *Game) Layout(outsideWidth, outsideHeight int) (
+	_screenWidth, _screenHeight int) {
 	return screenWidth, screenHeight
 }
 
