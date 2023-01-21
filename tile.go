@@ -1,10 +1,11 @@
 package main
 
 import (
-	"image/color"
 	_ "image/png"
+	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 type Tile struct {
@@ -12,20 +13,28 @@ type Tile struct {
 	image *ebiten.Image
 }
 
-// InitTiles initialises every tile on-screen.
-// Will be converted to take a TileArray after Tile.New() is created.
-func (g *Game) InitTiles() {
-	//replace with images later
-	tempGrass := ebiten.NewImage(tileSize, tileSize)
-	tempGrass.Fill(color.RGBA{0, 0xFF, 0, 0xFF})
-
-	g.tileSet = []Tile{
-		{
-			name:  "basicGrass",
-			image: tempGrass,
-		},
+func (g *Game) NewTile(
+	name,
+	imageName string,
+) {
+	path := "images/" + imageName
+	img, _, err := ebitenutil.NewImageFromFile(path)
+	if err != nil {
+		log.Fatal(err)
 	}
+	g.tileSet = append(g.tileSet, Tile{
+		name:  name,
+		image: img,
+	})
+}
 
+// SetTileStage sets the value of every Tile on-screen
+// Requires a 2D array of integers
+// given array must be of type [stageSizeY][stageSizeX]int
+// integer values correspond to TileSet element indices
+// e.g. 0 -> the first NewTile(), 1 -> the second NewTile() ...
+func (g *Game) SetTileStage(tileArray [stageSizeY][stageSizeX]int) {
+	g.tileStage = tileArray
 }
 
 // DrawTiles will draw every Tile in the game's list of objects.
