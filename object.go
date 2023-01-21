@@ -21,6 +21,22 @@ func (o *Object) MoveTo(x, y int) {
 	o.y = y
 }
 
+// LiftObject pushes an object to the end of the render list
+// Dangerous function! Moves object to end of g.objects
+func (g *Game) LiftObject(index int) {
+	length := len(g.objects)
+	if index > length ||
+		index < 0 {
+		log.Fatal("Error: Index out of range")
+	}
+	object := g.objects[index]
+	slice := g.objects[:index]
+	if index != length-1 {
+		slice = append(slice, g.objects[index+1:]...)
+	}
+	g.objects = append(slice, object)
+}
+
 // GetObjectsAt returns true if there is an Object at the given coordinates
 // An array of every Object at that coordinate is also returned.
 func (g *Game) GetObjectsAt(x, y int) (bool, []int) {

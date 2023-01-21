@@ -63,6 +63,7 @@ func NewGame() *Game {
 
 	game.NewObject("die_1", "d6_6.png", 3, 3)
 	game.NewObject("die_2", "d6_6.png", 5, 6)
+	game.NewObject("die_3", "d6_6.png", 8, 12)
 
 	return &game
 }

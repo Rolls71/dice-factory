@@ -29,6 +29,7 @@ func (g *Game) updateOnMouseDown() {
 		if isObject {
 			g.objects[objectIndices[0]].trackMouse = true
 			g.isDragging = true
+			g.LiftObject(objectIndices[0])
 		}
 	}
 }
