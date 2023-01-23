@@ -25,6 +25,7 @@ type Game struct {
 	tileStage  [stageSizeY][stageSizeX]int
 	tileSet    []Tile
 	objects    []Object
+	objectSet  []Object
 	isDragging bool
 }
 
@@ -37,11 +38,12 @@ func NewGame() *Game {
 		tileStage:  [stageSizeY][stageSizeX]int{},
 		tileSet:    []Tile{},
 		objects:    []Object{},
+		objectSet:  []Object{},
 		isDragging: false,
 	}
 
-	game.NewTile("basic_grass", "basic_grass.png")
-	game.NewTile("long_grass", "long_grass.png")
+	game.NewTile("basic_grass", "basic_grass.png") // ID = 0
+	game.NewTile("long_grass", "long_grass.png")   // ID = 1
 
 	game.SetTileStage([stageSizeY][stageSizeX]int{
 		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -61,9 +63,12 @@ func NewGame() *Game {
 		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	})
 
-	game.NewObject("die_1", "d6_6.png", 3, 3)
-	game.NewObject("die_2", "d6_6.png", 5, 6)
-	game.NewObject("die_3", "d6_6.png", 8, 12)
+	game.NewObject("d6", "d6_6.png") // ID = 0
+
+	game.AddObject(0, 5, 5)
+	game.AddObject(0, 5, 10)
+	game.AddObject(0, 10, 10)
+	game.AddObject(0, 10, 5)
 
 	return &game
 }

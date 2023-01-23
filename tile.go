@@ -29,9 +29,9 @@ func (g *Game) NewTile(
 }
 
 // SetTileStage sets the value of every Tile on-screen
-// Requires a 2D array of integers
-// given array must be of type [stageSizeY][stageSizeX]int
-// integer values correspond to TileSet element indices
+// Requires a 2D array of Tile ID integers
+// Given array must be of type [stageSizeY][stageSizeX]int
+// Tile IDs correspond to TileSet element indices
 // e.g. 0 -> the first NewTile(), 1 -> the second NewTile() ...
 func (g *Game) SetTileStage(tileArray [stageSizeY][stageSizeX]int) {
 	g.tileStage = tileArray

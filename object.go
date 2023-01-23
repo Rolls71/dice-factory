@@ -50,25 +50,33 @@ func (g *Game) GetObjectsAt(x, y int) (bool, []int) {
 	return (len(objectIndices) > 0), objectIndices
 }
 
-// NewObject constructs a new Object with given parameters.
-// New Object is appended to the Game's Object list.
+// NewObject constructs a new type of object
+// New Object is appended to the Game's Object Set
 func (g *Game) NewObject(
 	objectName,
 	imageName string,
-	x, y int,
 ) {
 	path := "images/" + imageName
 	img, _, err := ebitenutil.NewImageFromFile(path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	g.objects = append(g.objects, Object{
+	g.objectSet = append(g.objects, Object{
 		name:       objectName,
 		image:      img,
-		x:          x,
-		y:          y,
+		x:          0,
+		y:          0,
 		trackMouse: false,
 	})
+}
+
+// AddObject will add an instance of an Object in the Game's objectSet.
+// Object will be added at the given location
+// Object ID is equal to it's position in Game.objectSet
+func (g *Game) AddObject(id, x, y int) {
+	object := g.objectSet[id]
+	object.MoveTo(x, y)
+	g.objects = append(g.objects, object)
 }
 
 // DrawObjects will draw every Tile in the game's list of objects.
