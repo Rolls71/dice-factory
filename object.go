@@ -12,6 +12,16 @@ type ObjectType int
 
 const (
 	PlainObject ObjectType = iota
+	ConveyorBelt
+)
+
+type ObjectFacing int
+
+const (
+	South ObjectFacing = iota
+	West
+	North
+	East
 )
 
 type Object struct {
@@ -19,12 +29,18 @@ type Object struct {
 	image      *ebiten.Image
 	x          int
 	y          int
-	trackMouse bool //default false for constructor
+
+	facing     ObjectFacing // default South
+	trackMouse bool         // default false
 }
 
-func (o *Object) MoveTo(x, y int) {
+func (o *Object) SetPosition(x, y int) {
 	o.x = x
 	o.y = y
+}
+
+func (o *Object) SetFacing(dir ObjectFacing) {
+	o.facing = dir
 }
 
 // LiftObject pushes an object to the end of the render list
@@ -73,7 +89,6 @@ func (g *Game) NewObject(
 		image:      img,
 		x:          x,
 		y:          y,
-		trackMouse: false,
 	})
 }
 

@@ -46,7 +46,7 @@ func (g *Game) updateOnMouseUp() {
 				g.objects[i].trackMouse = false
 				g.isDragging = false
 				if !isObject {
-					g.objects[i].MoveTo(x, y)
+					g.objects[i].SetPosition(x, y)
 				}
 				break
 			}

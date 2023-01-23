@@ -67,6 +67,8 @@ func NewGame() *Game {
 	game.NewObject(PlainObject, "d6_6.png", 5, 6)
 	game.NewObject(PlainObject, "d6_6.png", 5, 7)
 
+	game.NewObject(ConveyorBelt, "conveyor_belt.png", 7, 7)
+
 	return &game
 }
 
