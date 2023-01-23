@@ -8,8 +8,14 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
+type ObjectType int
+
+const (
+	PlainObject ObjectType = iota
+)
+
 type Object struct {
-	name       string
+	objectType ObjectType
 	image      *ebiten.Image
 	x          int
 	y          int
@@ -50,33 +56,25 @@ func (g *Game) GetObjectsAt(x, y int) (bool, []int) {
 	return (len(objectIndices) > 0), objectIndices
 }
 
-// NewObject constructs a new type of object
+// NewObject constructs a new object of ObjectType
 // New Object is appended to the Game's Object Set
 func (g *Game) NewObject(
-	objectName,
+	objectType ObjectType,
 	imageName string,
+	x, y int,
 ) {
 	path := "images/" + imageName
 	img, _, err := ebitenutil.NewImageFromFile(path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	g.objectSet = append(g.objects, Object{
-		name:       objectName,
+	g.objects = append(g.objects, Object{
+		objectType: objectType,
 		image:      img,
-		x:          0,
-		y:          0,
+		x:          x,
+		y:          y,
 		trackMouse: false,
 	})
-}
-
-// AddObject will add an instance of an Object in the Game's objectSet.
-// Object will be added at the given location
-// Object ID is equal to it's position in Game.objectSet
-func (g *Game) AddObject(id, x, y int) {
-	object := g.objectSet[id]
-	object.MoveTo(x, y)
-	g.objects = append(g.objects, object)
 }
 
 // DrawObjects will draw every Tile in the game's list of objects.

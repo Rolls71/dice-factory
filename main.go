@@ -63,12 +63,9 @@ func NewGame() *Game {
 		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	})
 
-	game.NewObject("d6", "d6_6.png") // ID = 0
-
-	game.AddObject(0, 5, 5)
-	game.AddObject(0, 5, 10)
-	game.AddObject(0, 10, 10)
-	game.AddObject(0, 10, 5)
+	game.NewObject(PlainObject, "d6_6.png", 5, 5)
+	game.NewObject(PlainObject, "d6_6.png", 5, 6)
+	game.NewObject(PlainObject, "d6_6.png", 5, 7)
 
 	return &game
 }
