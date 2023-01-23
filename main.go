@@ -25,7 +25,8 @@ type Game struct {
 	tileStage  [stageSizeY][stageSizeX]int
 	tileSet    []Tile
 	objects    []Object
-	objectSet  []Object
+	itemSet    []Item
+	items      []Item
 	isDragging bool
 }
 
@@ -38,7 +39,8 @@ func NewGame() *Game {
 		tileStage:  [stageSizeY][stageSizeX]int{},
 		tileSet:    []Tile{},
 		objects:    []Object{},
-		objectSet:  []Object{},
+		itemSet:    []Item{},
+		items:      []Item{},
 		isDragging: false,
 	}
 
@@ -63,23 +65,27 @@ func NewGame() *Game {
 		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	})
 
-	game.NewObject(PlainObject, "d6_6.png", 5, 5)
-	game.NewObject(PlainObject, "d6_6.png", 5, 6)
-	game.NewObject(PlainObject, "d6_6.png", 5, 7)
-
 	game.NewObject(ConveyorBelt, "conveyor_belt.png", 7, 7)
+	game.NewObject(ConveyorBelt, "conveyor_belt.png", 7, 8)
+	game.NewObject(ConveyorBelt, "conveyor_belt.png", 7, 9)
+	game.NewObject(ConveyorBelt, "conveyor_belt.png", 7, 10)
+
+	game.NewItem(PlainItem, "d6_6.png")
 
 	return &game
 }
 
 func (g *Game) Update() error {
 	g.UpdateCursor()
+	g.UpdateObjects()
+	g.UpdateItems()
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.DrawTiles(screen)
 	g.DrawObjects(screen)
+	g.DrawItems(screen)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (

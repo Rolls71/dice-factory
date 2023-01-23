@@ -27,8 +27,8 @@ const (
 type Object struct {
 	objectType ObjectType
 	image      *ebiten.Image
-	x          int
-	y          int
+	x          int // tile coord
+	y          int // tile coord
 
 	facing     ObjectFacing // default South
 	trackMouse bool         // default false
@@ -43,33 +43,68 @@ func (o *Object) SetFacing(dir ObjectFacing) {
 	o.facing = dir
 }
 
-// LiftObject pushes an object to the end of the render list
-// Dangerous function! Moves object to end of g.objects
-func (g *Game) LiftObject(index int) {
-	length := len(g.objects)
-	if index > length ||
-		index < 0 {
-		log.Fatal("Error: Index out of range")
+func (g *Game) UpdateObjects() {
+	for index, object := range g.objects {
+		switch object.objectType {
+		case ConveyorBelt:
+			isItem, itemIndex := g.GetItemOn(index)
+			if isItem {
+				isNeighbor, neighborIndex := g.GetNeighborOf(&object)
+				if isNeighbor {
+					g.items[itemIndex].SetTarget(
+						g.objects[neighborIndex].x,
+						g.objects[neighborIndex].y,
+					)
+				}
+
+			}
+		}
 	}
-	object := g.objects[index]
-	slice := g.objects[:index]
-	if index != length-1 {
-		slice = append(slice, g.objects[index+1:]...)
+}
+
+func (g *Game) GetNeighborOf(o *Object) (bool, int) {
+	var isObject bool
+	var index int
+	switch o.facing {
+	case South:
+		isObject, index = g.GetObjectsAt(o.x, o.y+1)
+		if isObject {
+			return true, index
+		}
+	case West:
+		isObject, index = g.GetObjectsAt(o.x-1, o.y)
+		if isObject {
+			return true, index
+		}
+	case North:
+		isObject, index = g.GetObjectsAt(o.x, o.y-1)
+		if isObject {
+			return true, index
+		}
+	case East:
+		isObject, index = g.GetObjectsAt(o.x+1, o.y)
+		if isObject {
+			return true, index
+		}
 	}
-	g.objects = append(slice, object)
+	isObject, index = g.GetObjectsAt(o.x, o.y)
+	if isObject {
+		return true, index
+	} else {
+		return false, -1
+	}
 }
 
 // GetObjectsAt returns true if there is an Object at the given coordinates
 // An array of every Object at that coordinate is also returned.
-func (g *Game) GetObjectsAt(x, y int) (bool, []int) {
-	var objectIndices []int
+func (g *Game) GetObjectsAt(x, y int) (bool, int) {
 	for index, object := range g.objects {
 		if object.x == x &&
 			object.y == y {
-			objectIndices = append(objectIndices, index)
+			return true, index
 		}
 	}
-	return (len(objectIndices) > 0), objectIndices
+	return false, 0
 }
 
 // NewObject constructs a new object of ObjectType
@@ -96,16 +131,23 @@ func (g *Game) NewObject(
 // Objects are drawn on their stored grid coordinate.
 // An Object flagged with trackMouse will be drawn attached to cursor instead.
 func (g *Game) DrawObjects(screen *ebiten.Image) {
+	var onTop *ebiten.Image
+	var topOptions *ebiten.DrawImageOptions
 	for _, object := range g.objects {
 		options := &ebiten.DrawImageOptions{}
 		if object.trackMouse {
 			x, y := ebiten.CursorPosition()
 			options.GeoM.Translate(float64(x), float64(y))
+			onTop = object.image
+			topOptions = options
 		} else {
 			options.GeoM.Translate(
 				float64(object.x*tileSize),
 				float64(object.y*tileSize))
+			screen.DrawImage(object.image, options)
 		}
-		screen.DrawImage(object.image, options)
+	}
+	if onTop != nil {
+		screen.DrawImage(onTop, topOptions)
 	}
 }
