@@ -87,8 +87,11 @@ func NewGame() *Game {
 
 func (g *Game) Update() error {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
-		item := g.SpawnItem(PlainItem, &g.objects[0])
-		fmt.Printf("spawn (%d,%d)\n", ToTile(item.x), ToTile(item.y))
+		g.SpawnItem(PlainItem, &g.objects[0])
+	}
+	if inpututil.IsKeyJustPressed(ebiten.Key1) {
+		x, y := g.GetCursorCoordinates()
+		g.SpawnObject(0, "conveyor_belt.png", x, y)
 	}
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonMiddle) {
 		fmt.Printf("objects: ")

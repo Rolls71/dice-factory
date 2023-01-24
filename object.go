@@ -32,8 +32,8 @@ type Object struct {
 	x          int // tile coord
 	y          int // tile coord
 
-	facing     ObjectFacing // default South
-	trackMouse bool         // default false
+	facing    ObjectFacing // default South
+	isDragged bool         // default false
 }
 
 func (o *Object) SetPosition(x, y int) {
@@ -45,8 +45,46 @@ func (o *Object) SetFacing(dir ObjectFacing) {
 	o.facing = dir
 }
 
-func (o *Object) Rotate() {
+func (o *Object) AddRotation() {
 	o.facing = (o.facing + 1) % 4
+}
+
+func (g *Game) RotateObject(object *Object) {
+	object.AddRotation()
+	isItem, _ := g.GetItemTargeting(object)
+	if isItem {
+		g.MoveItem(object)
+	}
+}
+
+func (g *Game) MoveItem(object *Object) {
+	// is there an item targeting the belt?
+	isItem, item := g.GetItemTargeting(object)
+	if !isItem {
+		return
+	}
+
+	// is the item currently on the belt?
+	if item.x != ToReal(object.x) ||
+		item.y != ToReal(object.y) {
+		return
+	}
+
+	// is the belt pointing at an object?
+	isNeighbor, neighbor := g.GetNeighborOf(object)
+	if !isNeighbor {
+		return
+	}
+
+	// is there an item targeting the neighbor?
+	isItem, _ = g.GetItemTargeting(neighbor)
+	if isItem {
+		return
+	}
+
+	// set the item to target that object
+	item.SetTargetPosition(neighbor.x, neighbor.y)
+	fmt.Printf("set target %d,%d\n", neighbor.x, neighbor.y)
 }
 
 // UpdateObjects will iterate through each Object and switch,
@@ -56,33 +94,7 @@ func (g *Game) UpdateObjects() {
 		object := &g.objects[index]
 		switch object.objectType {
 		case ConveyorBelt:
-			// is there an item targeting the belt?
-			isItem, item := g.GetItemTargeting(object)
-			if !isItem {
-				continue
-			}
-
-			// is the item currently on the belt?
-			if item.x != ToReal(object.x) ||
-				item.y != ToReal(object.y) {
-				continue
-			}
-
-			// is the belt pointing at an object?
-			isNeighbor, neighbor := g.GetNeighborOf(object)
-			if !isNeighbor {
-				continue
-			}
-
-			// is there an item targeting the neighbor?
-			isItem, _ = g.GetItemTargeting(neighbor)
-			if isItem {
-				continue
-			}
-
-			// set the item to target that object
-			item.SetTargetPosition(neighbor.x, neighbor.y)
-			fmt.Printf("set target %d,%d\n", neighbor.x, neighbor.y)
+			g.MoveItem(object)
 
 		}
 	}
@@ -158,21 +170,21 @@ func (g *Game) DrawObjects(screen *ebiten.Image) {
 	var topOptions *ebiten.DrawImageOptions
 	for _, copy := range g.objects {
 		options := &ebiten.DrawImageOptions{}
-		if copy.trackMouse {
+		options.GeoM.Rotate(math.Pi / 2 * float64(copy.facing))
+		switch copy.facing {
+		case West:
+			options.GeoM.Translate(float64(tileSize), 0)
+		case North:
+			options.GeoM.Translate(float64(tileSize), float64(tileSize))
+		case East:
+			options.GeoM.Translate(0, float64(tileSize))
+		}
+		if copy.isDragged {
 			x, y := ebiten.CursorPosition()
 			options.GeoM.Translate(float64(x), float64(y))
 			onTop = copy.image
 			topOptions = options
 		} else {
-			options.GeoM.Rotate(math.Pi / 2 * float64(copy.facing))
-			switch copy.facing {
-			case West:
-				options.GeoM.Translate(float64(tileSize), 0)
-			case North:
-				options.GeoM.Translate(float64(tileSize), float64(tileSize))
-			case East:
-				options.GeoM.Translate(0, float64(tileSize))
-			}
 			options.GeoM.Translate(
 				float64(copy.x*tileSize),
 				float64(copy.y*tileSize))
