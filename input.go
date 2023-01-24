@@ -14,15 +14,16 @@ func (g *Game) GetCursorCoordinates() (int, int) {
 }
 
 // UpdateCursor runs updateOnMouseDown and updateOnMouseUp
-func (g *Game) UpdateCursor() {
-	g.updateOnMouseDown()
-	g.updateOnMouseUp()
+func (g *Game) UpdateInput() {
+	g.onDragStart(ebiten.MouseButtonLeft)
+	g.onDragEnd(ebiten.MouseButtonLeft)
+	g.onRotate(ebiten.KeyR)
 }
 
 // updateOnMouseDown tests if an Object has been selected.
 // The Game's isDragging flag and the Object's trackMouse flag is set to true.
-func (g *Game) updateOnMouseDown() {
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) &&
+func (g *Game) onDragStart(mouseButton ebiten.MouseButton) {
+	if inpututil.IsMouseButtonJustPressed(mouseButton) &&
 		!g.isDragging {
 		x, y := g.GetCursorCoordinates()
 		isObject, object := g.GetObjectAt(x, y)
@@ -35,8 +36,8 @@ func (g *Game) updateOnMouseDown() {
 
 // updateOnMouseUp tests if a dragged object has been released.
 // The Game's isDragging flag and the Object's trackMouse flag is set to false.
-func (g *Game) updateOnMouseUp() {
-	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) &&
+func (g *Game) onDragEnd(mouseButton ebiten.MouseButton) {
+	if inpututil.IsMouseButtonJustReleased(mouseButton) &&
 		g.isDragging {
 		x, y := g.GetCursorCoordinates()
 		isObject, _ := g.GetObjectAt(x, y)
@@ -49,6 +50,16 @@ func (g *Game) updateOnMouseUp() {
 				}
 				break
 			}
+		}
+	}
+}
+
+func (g *Game) onRotate(key ebiten.Key) {
+	if inpututil.IsKeyJustPressed(key) {
+		x, y := g.GetCursorCoordinates()
+		isObject, object := g.GetObjectAt(x, y)
+		if isObject {
+			object.Rotate()
 		}
 	}
 }

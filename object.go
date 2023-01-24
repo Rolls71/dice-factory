@@ -4,6 +4,7 @@ import (
 	"fmt"
 	_ "image/png"
 	"log"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -44,6 +45,10 @@ func (o *Object) SetFacing(dir ObjectFacing) {
 	o.facing = dir
 }
 
+func (o *Object) Rotate() {
+	o.facing = (o.facing + 1) % 4
+}
+
 // UpdateObjects will iterate through each Object and switch,
 // depending on their type. Each Object type may have different functionality
 func (g *Game) UpdateObjects() {
@@ -52,8 +57,8 @@ func (g *Game) UpdateObjects() {
 		switch object.objectType {
 		case ConveyorBelt:
 			// is there an item targeting the belt?
-			isObject, item := g.GetItemTargeting(object)
-			if !isObject {
+			isItem, item := g.GetItemTargeting(object)
+			if !isItem {
 				continue
 			}
 
@@ -66,6 +71,12 @@ func (g *Game) UpdateObjects() {
 			// is the belt pointing at an object?
 			isNeighbor, neighbor := g.GetNeighborOf(object)
 			if !isNeighbor {
+				continue
+			}
+
+			// is there an item targeting the neighbor?
+			isItem, _ = g.GetItemTargeting(neighbor)
+			if isItem {
 				continue
 			}
 
@@ -153,6 +164,15 @@ func (g *Game) DrawObjects(screen *ebiten.Image) {
 			onTop = copy.image
 			topOptions = options
 		} else {
+			options.GeoM.Rotate(math.Pi / 2 * float64(copy.facing))
+			switch copy.facing {
+			case West:
+				options.GeoM.Translate(float64(tileSize), 0)
+			case North:
+				options.GeoM.Translate(float64(tileSize), float64(tileSize))
+			case East:
+				options.GeoM.Translate(0, float64(tileSize))
+			}
 			options.GeoM.Translate(
 				float64(copy.x*tileSize),
 				float64(copy.y*tileSize))

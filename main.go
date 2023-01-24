@@ -96,7 +96,7 @@ func (g *Game) Update() error {
 		fmt.Print("items: ")
 		fmt.Println(g.items)
 	}
-	g.UpdateCursor()
+	g.UpdateInput()
 	g.UpdateObjects()
 	g.UpdateItems()
 	return nil
