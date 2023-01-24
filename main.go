@@ -39,13 +39,13 @@ func ToTile(f float64) int {
 
 // Game stores all data relevant to the running game
 type Game struct {
-	tileSet    []Tile
-	tileStage  [stageSizeY][stageSizeX]int
-	objectSet  []Object
-	objects    []Object
-	itemSet    []Item
-	items      []Item
-	isDragging bool
+	tileSet    []Tile                      // Stores different types of Tiles.
+	tileStage  [stageSizeY][stageSizeX]int // Stores Tile instances to be drawn.
+	objectSet  []Object                    // Stores different types of Objects.
+	objects    []Object                    // Stores Object instances to be drawn.
+	itemSet    []Item                      // Stores different types of Items.
+	items      []Item                      // Stores Item instances to be drawn.
+	isDragging bool                        // Is an Object being dragged
 }
 
 // NewGame constructs and returns a Game struct.
@@ -88,10 +88,10 @@ func NewGame() *Game {
 	game.SpawnObject(ConveyorBelt, 7, 8, South)
 	game.SpawnObject(ConveyorBelt, 7, 9, West)
 	game.SpawnObject(ConveyorBelt, 6, 9, West)
-	game.SpawnObject(ConveyorBelt, 5, 9, West)
-	game.SpawnObject(ConveyorBelt, 5, 8, West)
-	game.SpawnObject(ConveyorBelt, 5, 7, West)
-	game.SpawnObject(ConveyorBelt, 6, 7, West)
+	game.SpawnObject(ConveyorBelt, 5, 9, North)
+	game.SpawnObject(ConveyorBelt, 5, 8, North)
+	game.SpawnObject(ConveyorBelt, 5, 7, East)
+	game.SpawnObject(ConveyorBelt, 6, 7, East)
 
 	game.NewItem(PlainItem, "d6_6.png")
 	game.SpawnItem(PlainItem, start)

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	_ "image/png"
 	"log"
 	"math"
@@ -49,6 +48,12 @@ func (o *Object) Rotate() {
 	o.facing = (o.facing + 1) % 4
 }
 
+// MoveItemOn will set the target of an item on the object to a neighbor.
+// First it checks if theres an item targeting the belt, if there is it checks
+// if it's on the object. If its on the object, it checks if the obhect is
+// pointing at another object. If theres somewhere to send the item, it checks
+// if the next object is targeted by another item. If its not it will retarget
+// the item.
 func (g *Game) MoveItemOn(object *Object) {
 	// is there an item targeting the belt?
 	isItem, item := g.GetItemTargeting(object)
@@ -76,7 +81,6 @@ func (g *Game) MoveItemOn(object *Object) {
 
 	// set the item to target that object
 	item.SetTargetPosition(neighbor.x, neighbor.y)
-	fmt.Printf("set target %d,%d\n", neighbor.x, neighbor.y)
 }
 
 // UpdateObjects will iterate through each Object and switch,
