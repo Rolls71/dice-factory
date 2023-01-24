@@ -19,6 +19,10 @@ const (
 )
 
 const (
+	frameDelta float64 = 1.0 / 60.0
+)
+
+const (
 	stageSizeX int = screenWidth / tileSize
 	stageSizeY int = screenHeight / tileSize
 )
@@ -84,7 +88,7 @@ func NewGame() *Game {
 func (g *Game) Update() error {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
 		item := g.SpawnItem(PlainItem, &g.objects[0])
-		fmt.Printf("spawn (%d,%d)\n", item.x, item.y)
+		fmt.Printf("spawn (%d,%d)\n", ToTile(item.x), ToTile(item.y))
 	}
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonMiddle) {
 		fmt.Printf("objects: ")

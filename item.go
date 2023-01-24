@@ -3,6 +3,7 @@ package main
 import (
 	_ "image/png"
 	"log"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -14,24 +15,24 @@ const (
 	PlainItem ItemType = iota
 )
 
-type PixelCoordinate int
-
-func ToPixel(i int) PixelCoordinate {
-	return PixelCoordinate(i * tileSize)
+func ToReal(i int) float64 {
+	return float64(i * tileSize)
 }
 
-func (p PixelCoordinate) FromPixel() int {
-	return int(p) / tileSize
+func ToTile(f float64) int {
+	return int(f) / tileSize
 }
+
+const itemSpeed float64 = 32 // pixels per second
 
 type Item struct {
 	itemType         ItemType
 	image            *ebiten.Image
-	x, y             PixelCoordinate
+	x, y             float64
 	xTarget, yTarget int // index of target object
 }
 
-func (i *Item) SetPixelPosition(x, y PixelCoordinate) {
+func (i *Item) SetRealCoordinate(x, y float64) {
 	i.x = x
 	i.y = y
 }
@@ -39,6 +40,30 @@ func (i *Item) SetPixelPosition(x, y PixelCoordinate) {
 func (i *Item) SetTargetPosition(x, y int) {
 	i.xTarget = x
 	i.yTarget = y
+}
+
+func (i *Item) Step() {
+	xDelta := ToReal(i.xTarget) - i.x
+	if math.Pow(xDelta, 2) < 1 {
+		i.x = ToReal(i.xTarget)
+	} else {
+		if xDelta > 0 {
+			i.x += itemSpeed * frameDelta
+		} else {
+			i.x -= itemSpeed * frameDelta
+		}
+	}
+
+	yDelta := ToReal(i.yTarget) - i.y
+	if math.Pow(yDelta, 2) < 1 {
+		i.y = ToReal(i.yTarget)
+	} else {
+		if yDelta > 0 {
+			i.y += itemSpeed * frameDelta
+		} else {
+			i.y -= itemSpeed * frameDelta
+		}
+	}
 }
 
 // NewItem will create a new item of given image and type
@@ -74,7 +99,7 @@ func (g *Game) SpawnItem(itemType ItemType, creator *Object) *Item {
 	g.items = append(g.items, g.itemSet[itemType])
 	item := &g.items[len]
 	x, y := creator.x, creator.y
-	item.SetPixelPosition(ToPixel(x), ToPixel(y))
+	item.SetRealCoordinate(ToReal(x), ToReal(y))
 	item.SetTargetPosition(x, y)
 	return item
 }
@@ -82,9 +107,16 @@ func (g *Game) SpawnItem(itemType ItemType, creator *Object) *Item {
 // UpdateObjects will iterate through each Item and switch,
 // depending on their type. Each Item type may have different functionality.
 func (g *Game) UpdateItems() {
-	for _, item := range g.items {
+	for index := range g.items {
+		item := &g.items[index]
 		switch item.itemType {
 		case PlainItem:
+			// has item reached target position?
+			if item.x == ToReal(item.xTarget) &&
+				item.y == ToReal(item.yTarget) {
+				continue
+			}
+			item.Step()
 		}
 	}
 }

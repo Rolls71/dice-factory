@@ -58,8 +58,8 @@ func (g *Game) UpdateObjects() {
 			}
 
 			// is the item currently on the belt?
-			if item.x != ToPixel(object.x) ||
-				item.y != ToPixel(object.y) {
+			if item.x != ToReal(object.x) ||
+				item.y != ToReal(object.y) {
 				continue
 			}
 
