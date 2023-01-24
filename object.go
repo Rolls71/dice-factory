@@ -133,25 +133,37 @@ func (g *Game) GetObjectAt(x, y int) (bool, *Object) {
 	return false, &Object{}
 }
 
-// SpawnObject constructs a new object of ObjectType
+// NewObject creates a new type of object.
 // New Object is appended to the Game's Object Set
-func (g *Game) SpawnObject(
-	objectType ObjectType,
-	imageName string,
-	x, y int,
-) *Object {
+func (g *Game) NewObject(objectType ObjectType, imageName string) {
 	path := "images/" + imageName
 	img, _, err := ebitenutil.NewImageFromFile(path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	g.objects = append(g.objects, Object{
+	g.objectSet = append(g.objectSet, Object{
 		objectType: objectType,
 		image:      img,
-		x:          x,
-		y:          y,
 	})
-	return &g.objects[len(g.objects)-1]
+}
+
+// SpawnObject constructs a new object of ObjectType
+func (g *Game) SpawnObject(
+	objectType ObjectType,
+	x, y int,
+	facing ObjectFacing,
+) *Object {
+	len := len(g.objects)
+	for _, object := range g.objectSet {
+		if object.objectType == objectType {
+			g.objects = append(g.objects, object)
+			break
+		}
+	}
+	object := &g.objects[len]
+	object.SetPosition(x, y)
+	object.SetFacing(facing)
+	return object
 }
 
 // DrawObjects will draw every Tile in the game's list of objects.

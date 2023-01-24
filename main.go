@@ -27,9 +27,21 @@ const (
 	stageSizeY int = screenHeight / tileSize
 )
 
+// ToReal converts a tile coordinate to a real coordinate
+func ToReal(i int) float64 {
+	return float64(i * tileSize)
+}
+
+// ToTile converts a real coordinate to a tile coordinate
+func ToTile(f float64) int {
+	return int(f) / tileSize
+}
+
+// Game stores all data relevant to the running game
 type Game struct {
-	tileStage  [stageSizeY][stageSizeX]int
 	tileSet    []Tile
+	tileStage  [stageSizeY][stageSizeX]int
+	objectSet  []Object
 	objects    []Object
 	itemSet    []Item
 	items      []Item
@@ -37,13 +49,11 @@ type Game struct {
 }
 
 // NewGame constructs and returns a Game struct.
-// Tiles to be used in the game are initialised here with Game.NewTile()
-// The Tile stage is initialised here with Game.SetTileArray()
-// Objects to be added at the start are initialised here with Game.NewObject()
 func NewGame() *Game {
 	game := Game{
-		tileStage:  [stageSizeY][stageSizeX]int{},
 		tileSet:    []Tile{},
+		tileStage:  [stageSizeY][stageSizeX]int{},
+		objectSet:  []Object{},
 		objects:    []Object{},
 		itemSet:    []Item{},
 		items:      []Item{},
@@ -71,27 +81,32 @@ func NewGame() *Game {
 		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	})
 
-	game.SpawnObject(ConveyorBelt, "conveyor_belt.png", 7, 7).SetFacing(0)
-	game.SpawnObject(ConveyorBelt, "conveyor_belt.png", 7, 8).SetFacing(0)
-	game.SpawnObject(ConveyorBelt, "conveyor_belt.png", 7, 9).SetFacing(1)
-	game.SpawnObject(ConveyorBelt, "conveyor_belt.png", 6, 9).SetFacing(1)
-	game.SpawnObject(ConveyorBelt, "conveyor_belt.png", 5, 9).SetFacing(2)
-	game.SpawnObject(ConveyorBelt, "conveyor_belt.png", 5, 8).SetFacing(2)
-	game.SpawnObject(ConveyorBelt, "conveyor_belt.png", 5, 7).SetFacing(3)
-	game.SpawnObject(ConveyorBelt, "conveyor_belt.png", 6, 7).SetFacing(3)
+	game.NewObject(ConveyorBelt, "conveyor_belt.png")
+	game.NewObject(PlainObject, "plain_object.png")
+
+	start := game.SpawnObject(ConveyorBelt, 7, 7, South)
+	game.SpawnObject(ConveyorBelt, 7, 8, South)
+	game.SpawnObject(ConveyorBelt, 7, 9, West)
+	game.SpawnObject(ConveyorBelt, 6, 9, West)
+	game.SpawnObject(ConveyorBelt, 5, 9, West)
+	game.SpawnObject(ConveyorBelt, 5, 8, West)
+	game.SpawnObject(ConveyorBelt, 5, 7, West)
+	game.SpawnObject(ConveyorBelt, 6, 7, West)
 
 	game.NewItem(PlainItem, "d6_6.png")
+	game.SpawnItem(PlainItem, start)
 
 	return &game
 }
 
+// Update calls the game's update functions
 func (g *Game) Update() error {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
 		g.SpawnItem(PlainItem, &g.objects[0])
 	}
 	if inpututil.IsKeyJustPressed(ebiten.Key1) {
 		x, y := g.GetCursorCoordinates()
-		g.SpawnObject(ConveyorBelt, "conveyor_belt.png", x, y)
+		g.SpawnObject(ConveyorBelt, x, y, South)
 	}
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonMiddle) {
 		fmt.Printf("objects: ")
@@ -105,6 +120,7 @@ func (g *Game) Update() error {
 	return nil
 }
 
+// Draw calls the games draf functions and passes the screen
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.DrawTiles(screen)
 	g.DrawObjects(screen)
@@ -118,7 +134,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (
 
 func main() {
 	ebiten.SetWindowSize(screenWidth, screenHeight)
-	ebiten.SetWindowTitle("Hello, World!")
+	ebiten.SetWindowTitle("Dice Factory")
 	if err := ebiten.RunGame(NewGame()); err != nil {
 		log.Fatal(err)
 	}

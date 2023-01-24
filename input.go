@@ -13,14 +13,15 @@ func (g *Game) GetCursorCoordinates() (int, int) {
 	return x, y
 }
 
-// UpdateCursor runs updateOnMouseDown and updateOnMouseUp
+// UpdateInput runs all major input functions.
+// Keys can be rebound here
 func (g *Game) UpdateInput() {
 	g.onDragStart(ebiten.MouseButtonLeft)
 	g.onDragEnd(ebiten.MouseButtonLeft)
 	g.onRotate(ebiten.KeyR)
 }
 
-// updateOnMouseDown tests if an Object has been selected.
+// onDragStart tests if an Object has been selected.
 // The Game's isDragging flag and the Object's trackMouse flag is set to true.
 func (g *Game) onDragStart(mouseButton ebiten.MouseButton) {
 	if inpututil.IsMouseButtonJustPressed(mouseButton) &&
@@ -34,7 +35,7 @@ func (g *Game) onDragStart(mouseButton ebiten.MouseButton) {
 	}
 }
 
-// updateOnMouseUp tests if a dragged object has been released.
+// onDragEnd tests if a dragged object has been released.
 // The Game's isDragging flag and the Object's trackMouse flag is set to false.
 func (g *Game) onDragEnd(mouseButton ebiten.MouseButton) {
 	if inpututil.IsMouseButtonJustReleased(mouseButton) &&
@@ -54,6 +55,8 @@ func (g *Game) onDragEnd(mouseButton ebiten.MouseButton) {
 	}
 }
 
+// onRotate will rotate an object under the cursor if the right key has been
+// pressed. The key is passed as a parameter
 func (g *Game) onRotate(key ebiten.Key) {
 	if inpututil.IsKeyJustPressed(key) {
 		if g.isDragging {

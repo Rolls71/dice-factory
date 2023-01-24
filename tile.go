@@ -13,6 +13,7 @@ type Tile struct {
 	image *ebiten.Image
 }
 
+// NewTile adds a new type of Tiles to the game's tileSet.
 func (g *Game) NewTile(
 	name,
 	imageName string,

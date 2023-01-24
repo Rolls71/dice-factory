@@ -15,14 +15,6 @@ const (
 	PlainItem ItemType = iota
 )
 
-func ToReal(i int) float64 {
-	return float64(i * tileSize)
-}
-
-func ToTile(f float64) int {
-	return int(f) / tileSize
-}
-
 const itemSpeed float64 = 32 // pixels per second
 
 type Item struct {
@@ -80,6 +72,23 @@ func (g *Game) NewItem(item ItemType, imageName string) {
 	})
 }
 
+// SpawnItem will create an instance of an Item in the set.
+// The Item's position and Target position will be set to that of the creator.
+func (g *Game) SpawnItem(itemType ItemType, creator *Object) *Item {
+	len := len(g.items)
+	for _, item := range g.itemSet {
+		if item.itemType == itemType {
+			g.items = append(g.items, item)
+			break
+		}
+	}
+	item := &g.items[len]
+	x, y := creator.x, creator.y
+	item.SetRealCoordinate(ToReal(x), ToReal(y))
+	item.SetTargetPosition(x, y)
+	return item
+}
+
 // GetItemTargeting will find an Item targeting a given Object.
 // if an item is not found, it will return false and an Empty Object Reference.
 func (g *Game) GetItemTargeting(object *Object) (bool, *Item) {
@@ -90,18 +99,6 @@ func (g *Game) GetItemTargeting(object *Object) (bool, *Item) {
 		}
 	}
 	return false, &Item{}
-}
-
-// SpawnItem will create an instance of an Item in the set.
-// The Item's position and Target position will be set to that of the creator.
-func (g *Game) SpawnItem(itemType ItemType, creator *Object) *Item {
-	len := len(g.items)
-	g.items = append(g.items, g.itemSet[itemType])
-	item := &g.items[len]
-	x, y := creator.x, creator.y
-	item.SetRealCoordinate(ToReal(x), ToReal(y))
-	item.SetTargetPosition(x, y)
-	return item
 }
 
 // UpdateObjects will iterate through each Item and switch,
