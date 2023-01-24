@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	_ "image/png"
 	"log"
 
@@ -15,21 +14,31 @@ const (
 	PlainItem ItemType = iota
 )
 
+type PixelCoordinate int
+
+func ToPixel(i int) PixelCoordinate {
+	return PixelCoordinate(i * tileSize)
+}
+
+func (p PixelCoordinate) FromPixel() int {
+	return int(p) / tileSize
+}
+
 type Item struct {
 	itemType         ItemType
 	image            *ebiten.Image
-	x, y             int // pixel coords
-	targetX, targetY int // index of target object
+	x, y             PixelCoordinate
+	xTarget, yTarget int // index of target object
 }
 
-func (i *Item) SetPosition(x, y int) {
+func (i *Item) SetPixelPosition(x, y PixelCoordinate) {
 	i.x = x
 	i.y = y
 }
 
-func (i *Item) SetTarget(x, y int) {
-	i.targetX = x
-	i.targetY = y
+func (i *Item) SetTargetPosition(x, y int) {
+	i.xTarget = x
+	i.yTarget = y
 }
 
 // NewItem will create a new item of given image and type
@@ -46,12 +55,12 @@ func (g *Game) NewItem(item ItemType, imageName string) {
 	})
 }
 
-// GetItemOn will find an Item targetting a given Object.
+// GetItemTargeting will find an Item targetting a given Object.
 // if an item is not found, it will return false and an Empty Object Reference.
-func (g *Game) GetItemOn(object *Object) (bool, *Item) {
+func (g *Game) GetItemTargeting(object *Object) (bool, *Item) {
 	for index, copy := range g.items {
-		if copy.targetX == object.x &&
-			copy.targetY == object.y {
+		if copy.xTarget == object.x &&
+			copy.yTarget == object.y {
 			return true, &g.items[index]
 		}
 	}
@@ -61,13 +70,12 @@ func (g *Game) GetItemOn(object *Object) (bool, *Item) {
 // SpawnItem will create an instance of an Item in the set.
 // The Item's position and Target position will be set to that of the creator.
 func (g *Game) SpawnItem(itemType ItemType, creator *Object) *Item {
-	fmt.Printf("spawn\n")
 	len := len(g.items)
 	g.items = append(g.items, g.itemSet[itemType])
 	item := &g.items[len]
 	x, y := creator.x, creator.y
-	item.SetPosition(x*tileSize, y*tileSize)
-	item.SetTarget(x*tileSize, y*tileSize)
+	item.SetPixelPosition(ToPixel(x), ToPixel(y))
+	item.SetTargetPosition(x, y)
 	return item
 }
 

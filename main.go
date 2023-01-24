@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	_ "image/png"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 const (
@@ -65,10 +67,14 @@ func NewGame() *Game {
 		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	})
 
-	game.NewObject(ConveyorBelt, "conveyor_belt.png", 7, 7)
-	game.NewObject(ConveyorBelt, "conveyor_belt.png", 7, 8)
-	game.NewObject(ConveyorBelt, "conveyor_belt.png", 7, 9)
-	game.NewObject(ConveyorBelt, "conveyor_belt.png", 7, 10)
+	game.SpawnObject(ConveyorBelt, "conveyor_belt.png", 7, 7).SetFacing(0)
+	game.SpawnObject(ConveyorBelt, "conveyor_belt.png", 7, 8).SetFacing(0)
+	game.SpawnObject(ConveyorBelt, "conveyor_belt.png", 7, 9).SetFacing(1)
+	game.SpawnObject(ConveyorBelt, "conveyor_belt.png", 6, 9).SetFacing(1)
+	game.SpawnObject(ConveyorBelt, "conveyor_belt.png", 5, 9).SetFacing(2)
+	game.SpawnObject(ConveyorBelt, "conveyor_belt.png", 5, 8).SetFacing(2)
+	game.SpawnObject(ConveyorBelt, "conveyor_belt.png", 5, 7).SetFacing(3)
+	game.SpawnObject(ConveyorBelt, "conveyor_belt.png", 6, 7).SetFacing(3)
 
 	game.NewItem(PlainItem, "d6_6.png")
 
@@ -76,6 +82,16 @@ func NewGame() *Game {
 }
 
 func (g *Game) Update() error {
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
+		item := g.SpawnItem(PlainItem, &g.objects[0])
+		fmt.Printf("spawn (%d,%d)\n", item.x, item.y)
+	}
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonMiddle) {
+		fmt.Printf("objects: ")
+		fmt.Println(g.objects)
+		fmt.Print("items: ")
+		fmt.Println(g.items)
+	}
 	g.UpdateCursor()
 	g.UpdateObjects()
 	g.UpdateItems()

@@ -15,9 +15,6 @@ func (g *Game) GetCursorCoordinates() (int, int) {
 
 // UpdateCursor runs updateOnMouseDown and updateOnMouseUp
 func (g *Game) UpdateCursor() {
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
-		g.SpawnItem(PlainItem, &g.objects[0])
-	}
 	g.updateOnMouseDown()
 	g.updateOnMouseUp()
 }

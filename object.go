@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	_ "image/png"
 	"log"
 
@@ -46,9 +47,32 @@ func (o *Object) SetFacing(dir ObjectFacing) {
 // UpdateObjects will iterate through each Object and switch,
 // depending on their type. Each Object type may have different functionality
 func (g *Game) UpdateObjects() {
-	for _, objectCopy := range g.objects {
-		switch objectCopy.objectType {
+	for index := range g.objects {
+		object := &g.objects[index]
+		switch object.objectType {
 		case ConveyorBelt:
+			// is there an item targeting the belt?
+			isObject, item := g.GetItemTargeting(object)
+			if !isObject {
+				continue
+			}
+
+			// is the item currently on the belt?
+			if item.x != ToPixel(object.x) ||
+				item.y != ToPixel(object.y) {
+				continue
+			}
+
+			// is the belt pointing at an object?
+			isNeighbor, neighbor := g.GetNeighborOf(object)
+			if !isNeighbor {
+				continue
+			}
+
+			// set the item to target that object
+			item.SetTargetPosition(neighbor.x, neighbor.y)
+			fmt.Printf("set target %d,%d\n", neighbor.x, neighbor.y)
+
 		}
 	}
 }
@@ -94,13 +118,13 @@ func (g *Game) GetObjectAt(x, y int) (bool, *Object) {
 	return false, &Object{}
 }
 
-// NewObject constructs a new object of ObjectType
+// SpawnObject constructs a new object of ObjectType
 // New Object is appended to the Game's Object Set
-func (g *Game) NewObject(
+func (g *Game) SpawnObject(
 	objectType ObjectType,
 	imageName string,
 	x, y int,
-) {
+) *Object {
 	path := "images/" + imageName
 	img, _, err := ebitenutil.NewImageFromFile(path)
 	if err != nil {
@@ -112,6 +136,7 @@ func (g *Game) NewObject(
 		x:          x,
 		y:          y,
 	})
+	return &g.objects[len(g.objects)-1]
 }
 
 // DrawObjects will draw every Tile in the game's list of objects.
