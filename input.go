@@ -28,11 +28,10 @@ func (g *Game) updateOnMouseDown() {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) &&
 		!g.isDragging {
 		x, y := g.GetCursorCoordinates()
-		isObject, index := g.GetObjectsAt(x, y)
+		isObject, object := g.GetObjectAt(x, y)
 		if isObject {
-			g.objects[index].trackMouse = true
+			object.trackMouse = true
 			g.isDragging = true
-			//g.LiftObject(index)
 		}
 	}
 }
@@ -43,9 +42,9 @@ func (g *Game) updateOnMouseUp() {
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) &&
 		g.isDragging {
 		x, y := g.GetCursorCoordinates()
-		isObject, _ := g.GetObjectsAt(x, y)
-		for i, object := range g.objects {
-			if object.trackMouse {
+		isObject, _ := g.GetObjectAt(x, y)
+		for i, copy := range g.objects {
+			if copy.trackMouse {
 				g.objects[i].trackMouse = false
 				g.isDragging = false
 				if !isObject {

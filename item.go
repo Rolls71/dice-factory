@@ -15,29 +15,12 @@ const (
 	PlainItem ItemType = iota
 )
 
-/*const (
-	itemSpeed float64 = 1 // pixels per tick
-)*/
-
 type Item struct {
 	itemType         ItemType
 	image            *ebiten.Image
 	x, y             int // pixel coords
 	targetX, targetY int // index of target object
 }
-
-/*func (i *Item) StepToTarget() {
-	xDir := 1
-	if i.x > i.targetX {
-		xDir = -1
-	}
-	yDir := 1
-	if i.y > i.targetY {
-		yDir = -1
-	}
-	i.x += int(itemSpeed) * xDir
-	i.y += int(itemSpeed) * yDir
-}*/
 
 func (i *Item) SetPosition(x, y int) {
 	i.x = x
@@ -49,6 +32,8 @@ func (i *Item) SetTarget(x, y int) {
 	i.targetY = y
 }
 
+// NewItem will create a new item of given image and type
+// Other struct elements will default
 func (g *Game) NewItem(item ItemType, imageName string) {
 	path := "images/" + imageName
 	img, _, err := ebitenutil.NewImageFromFile(path)
@@ -61,48 +46,46 @@ func (g *Game) NewItem(item ItemType, imageName string) {
 	})
 }
 
-func (g *Game) GetItemOn(objectIndex int) (bool, int) {
-	for itemIndex, _ := range g.items {
-		if g.items[itemIndex].targetX == g.objects[objectIndex].x &&
-			g.items[itemIndex].targetY == g.objects[objectIndex].y {
-			return true, itemIndex
+// GetItemOn will find an Item targetting a given Object.
+// if an item is not found, it will return false and an Empty Object Reference.
+func (g *Game) GetItemOn(object *Object) (bool, *Item) {
+	for index, copy := range g.items {
+		if copy.targetX == object.x &&
+			copy.targetY == object.y {
+			return true, &g.items[index]
 		}
 	}
-	return false, -1
+	return false, &Item{}
 }
 
-func (g *Game) SpawnItem(itemType ItemType, creator *Object) int {
+// SpawnItem will create an instance of an Item in the set.
+// The Item's position and Target position will be set to that of the creator.
+func (g *Game) SpawnItem(itemType ItemType, creator *Object) *Item {
 	fmt.Printf("spawn\n")
 	len := len(g.items)
 	g.items = append(g.items, g.itemSet[itemType])
+	item := &g.items[len]
 	x, y := creator.x, creator.y
-	g.items[len].SetPosition(x*tileSize, y*tileSize)
-	isObject, i := g.GetNeighborOf(creator)
-	if isObject {
-		g.items[len].SetTarget(g.objects[i].x*tileSize, g.objects[i].y*tileSize)
-		fmt.Printf("target %d, %d\n", g.objects[i].x, g.objects[i].y)
-	} else {
-		log.Fatal("GetNeighborOf Failed: No neighbor")
-	}
-	return len
+	item.SetPosition(x*tileSize, y*tileSize)
+	item.SetTarget(x*tileSize, y*tileSize)
+	return item
 }
 
+// UpdateObjects will iterate through each Item and switch,
+// depending on their type. Each Item type may have different functionality.
 func (g *Game) UpdateItems() {
 	for _, item := range g.items {
 		switch item.itemType {
-		case PlainItem: // doStuff
+		case PlainItem:
 		}
-		/*if item.x != item.targetX ||
-			item.y != item.targetY {
-			g.items[index].StepToTarget()
-		}*/
 	}
 }
 
+// DrawItems draws each Item at a pixel coordinate
 func (g *Game) DrawItems(screen *ebiten.Image) {
-	for _, item := range g.items {
+	for _, copy := range g.items {
 		options := &ebiten.DrawImageOptions{}
-		options.GeoM.Translate(float64(item.x), float64(item.y))
-		screen.DrawImage(item.image, options)
+		options.GeoM.Translate(float64(copy.x), float64(copy.y))
+		screen.DrawImage(copy.image, options)
 	}
 }

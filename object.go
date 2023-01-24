@@ -43,68 +43,55 @@ func (o *Object) SetFacing(dir ObjectFacing) {
 	o.facing = dir
 }
 
+// UpdateObjects will iterate through each Object and switch,
+// depending on their type. Each Object type may have different functionality
 func (g *Game) UpdateObjects() {
-	for index, object := range g.objects {
-		switch object.objectType {
+	for _, objectCopy := range g.objects {
+		switch objectCopy.objectType {
 		case ConveyorBelt:
-			isItem, itemIndex := g.GetItemOn(index)
-			if isItem {
-				isNeighbor, neighborIndex := g.GetNeighborOf(&object)
-				if isNeighbor {
-					g.items[itemIndex].SetTarget(
-						g.objects[neighborIndex].x,
-						g.objects[neighborIndex].y,
-					)
-				}
-
-			}
 		}
 	}
 }
 
-func (g *Game) GetNeighborOf(o *Object) (bool, int) {
-	var isObject bool
-	var index int
+// GetNeighborOf looks at the tile the object is facing to check for an Object
+// If there is an object, it returns true, and a reference to the Object
+// If there is no object, it returns false, and an empty Object
+func (g *Game) GetNeighborOf(o *Object) (bool, *Object) {
 	switch o.facing {
 	case South:
-		isObject, index = g.GetObjectsAt(o.x, o.y+1)
+		isObject, object := g.GetObjectAt(o.x, o.y+1)
 		if isObject {
-			return true, index
+			return true, object
 		}
 	case West:
-		isObject, index = g.GetObjectsAt(o.x-1, o.y)
+		isObject, object := g.GetObjectAt(o.x-1, o.y)
 		if isObject {
-			return true, index
+			return true, object
 		}
 	case North:
-		isObject, index = g.GetObjectsAt(o.x, o.y-1)
+		isObject, object := g.GetObjectAt(o.x, o.y-1)
 		if isObject {
-			return true, index
+			return true, object
 		}
 	case East:
-		isObject, index = g.GetObjectsAt(o.x+1, o.y)
+		isObject, object := g.GetObjectAt(o.x+1, o.y)
 		if isObject {
-			return true, index
+			return true, object
 		}
 	}
-	isObject, index = g.GetObjectsAt(o.x, o.y)
-	if isObject {
-		return true, index
-	} else {
-		return false, -1
-	}
+	return false, &Object{}
 }
 
 // GetObjectsAt returns true if there is an Object at the given coordinates
 // An array of every Object at that coordinate is also returned.
-func (g *Game) GetObjectsAt(x, y int) (bool, int) {
-	for index, object := range g.objects {
-		if object.x == x &&
-			object.y == y {
-			return true, index
+func (g *Game) GetObjectAt(x, y int) (bool, *Object) {
+	for index, copy := range g.objects {
+		if copy.x == x &&
+			copy.y == y {
+			return true, &g.objects[index]
 		}
 	}
-	return false, 0
+	return false, &Object{}
 }
 
 // NewObject constructs a new object of ObjectType
@@ -133,18 +120,18 @@ func (g *Game) NewObject(
 func (g *Game) DrawObjects(screen *ebiten.Image) {
 	var onTop *ebiten.Image
 	var topOptions *ebiten.DrawImageOptions
-	for _, object := range g.objects {
+	for _, copy := range g.objects {
 		options := &ebiten.DrawImageOptions{}
-		if object.trackMouse {
+		if copy.trackMouse {
 			x, y := ebiten.CursorPosition()
 			options.GeoM.Translate(float64(x), float64(y))
-			onTop = object.image
+			onTop = copy.image
 			topOptions = options
 		} else {
 			options.GeoM.Translate(
-				float64(object.x*tileSize),
-				float64(object.y*tileSize))
-			screen.DrawImage(object.image, options)
+				float64(copy.x*tileSize),
+				float64(copy.y*tileSize))
+			screen.DrawImage(copy.image, options)
 		}
 	}
 	if onTop != nil {
