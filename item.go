@@ -80,7 +80,7 @@ func (g *Game) NewItem(item ItemType, imageName string) {
 	})
 }
 
-// GetItemTargeting will find an Item targetting a given Object.
+// GetItemTargeting will find an Item targeting a given Object.
 // if an item is not found, it will return false and an Empty Object Reference.
 func (g *Game) GetItemTargeting(object *Object) (bool, *Item) {
 	for index, copy := range g.items {

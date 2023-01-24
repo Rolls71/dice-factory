@@ -45,19 +45,11 @@ func (o *Object) SetFacing(dir ObjectFacing) {
 	o.facing = dir
 }
 
-func (o *Object) AddRotation() {
+func (o *Object) Rotate() {
 	o.facing = (o.facing + 1) % 4
 }
 
-func (g *Game) RotateObject(object *Object) {
-	object.AddRotation()
-	isItem, _ := g.GetItemTargeting(object)
-	if isItem {
-		g.MoveItem(object)
-	}
-}
-
-func (g *Game) MoveItem(object *Object) {
+func (g *Game) MoveItemOn(object *Object) {
 	// is there an item targeting the belt?
 	isItem, item := g.GetItemTargeting(object)
 	if !isItem {
@@ -94,7 +86,7 @@ func (g *Game) UpdateObjects() {
 		object := &g.objects[index]
 		switch object.objectType {
 		case ConveyorBelt:
-			g.MoveItem(object)
+			g.MoveItemOn(object)
 
 		}
 	}

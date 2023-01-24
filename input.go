@@ -59,7 +59,7 @@ func (g *Game) onRotate(key ebiten.Key) {
 		if g.isDragging {
 			for index, object := range g.objects {
 				if object.isDragged {
-					g.RotateObject(&g.objects[index])
+					g.objects[index].Rotate()
 					break
 				}
 			}
@@ -67,7 +67,7 @@ func (g *Game) onRotate(key ebiten.Key) {
 			x, y := g.GetCursorCoordinates()
 			isObject, object := g.GetObjectAt(x, y)
 			if isObject {
-				g.RotateObject(object)
+				object.Rotate()
 			}
 		}
 	}

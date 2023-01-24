@@ -91,7 +91,7 @@ func (g *Game) Update() error {
 	}
 	if inpututil.IsKeyJustPressed(ebiten.Key1) {
 		x, y := g.GetCursorCoordinates()
-		g.SpawnObject(0, "conveyor_belt.png", x, y)
+		g.SpawnObject(ConveyorBelt, "conveyor_belt.png", x, y)
 	}
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonMiddle) {
 		fmt.Printf("objects: ")
