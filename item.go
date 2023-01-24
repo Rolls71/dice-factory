@@ -58,6 +58,27 @@ func (i *Item) Step() {
 	}
 }
 
+// UpdateObjects will iterate through each Item and switch,
+// depending on their type. Each Item type may have different functionality.
+func (g *Game) UpdateItems() {
+	for _, copy := range g.items {
+		_, item := g.GetItemTargetingPosition(copy.xTarget, copy.yTarget)
+		switch item.itemType {
+		case PlainItem:
+			// has item reached target position?
+			if item.x == ToReal(item.xTarget) &&
+				item.y == ToReal(item.yTarget) {
+				continue
+			}
+			item.Step()
+		}
+		isObject, _ := g.GetObjectAt(item.xTarget, item.yTarget)
+		if !isObject {
+			g.RemoveItem(item)
+		}
+	}
+}
+
 // NewItem will create a new item of given image and type
 // Other struct elements will default
 func (g *Game) NewItem(item ItemType, imageName string) {
@@ -89,6 +110,21 @@ func (g *Game) SpawnItem(itemType ItemType, creator *Object) *Item {
 	return item
 }
 
+func (g *Game) RemoveItem(item *Item) {
+	var index int
+	for i, copy := range g.items {
+		if copy.xTarget == item.xTarget && copy.yTarget == item.yTarget {
+			index = i
+			break
+		}
+	}
+	if index != len(g.items)-1 {
+		g.items = append(g.items[:index], g.items[index+1:]...)
+	} else {
+		g.items = g.items[:index]
+	}
+}
+
 // GetItemTargeting will find an Item targeting a given Object.
 // if an item is not found, it will return false and an Empty Object Reference.
 func (g *Game) GetItemTargeting(object *Object) (bool, *Item) {
@@ -101,21 +137,14 @@ func (g *Game) GetItemTargeting(object *Object) (bool, *Item) {
 	return false, &Item{}
 }
 
-// UpdateObjects will iterate through each Item and switch,
-// depending on their type. Each Item type may have different functionality.
-func (g *Game) UpdateItems() {
-	for index := range g.items {
-		item := &g.items[index]
-		switch item.itemType {
-		case PlainItem:
-			// has item reached target position?
-			if item.x == ToReal(item.xTarget) &&
-				item.y == ToReal(item.yTarget) {
-				continue
-			}
-			item.Step()
+func (g *Game) GetItemTargetingPosition(x, y int) (bool, *Item) {
+	for index, copy := range g.items {
+		if copy.xTarget == x &&
+			copy.yTarget == y {
+			return true, &g.items[index]
 		}
 	}
+	return false, &Item{}
 }
 
 // DrawItems draws each Item at a pixel coordinate

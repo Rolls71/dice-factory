@@ -106,7 +106,12 @@ func (g *Game) Update() error {
 	}
 	if inpututil.IsKeyJustPressed(ebiten.Key1) {
 		x, y := g.GetCursorCoordinates()
-		g.SpawnObject(ConveyorBelt, x, y, South)
+		isObject, object := g.GetObjectAt(x, y)
+		if isObject {
+			g.RemoveObject(object)
+		} else {
+			g.SpawnObject(ConveyorBelt, x, y, South)
+		}
 	}
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonMiddle) {
 		fmt.Printf("objects: ")
@@ -120,7 +125,7 @@ func (g *Game) Update() error {
 	return nil
 }
 
-// Draw calls the games draf functions and passes the screen
+// Draw calls the games drag functions and passes the screen
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.DrawTiles(screen)
 	g.DrawObjects(screen)

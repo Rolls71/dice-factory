@@ -125,7 +125,7 @@ func (g *Game) GetNeighborOf(o *Object) (bool, *Object) {
 	return false, &Object{}
 }
 
-// GetObjectsAt returns true if there is an Object at the given coordinates
+// GetObjectAt returns true if there is an Object at the given coordinates
 // An array of every Object at that coordinate is also returned.
 func (g *Game) GetObjectAt(x, y int) (bool, *Object) {
 	for index, copy := range g.objects {
@@ -168,6 +168,17 @@ func (g *Game) SpawnObject(
 	object.SetPosition(x, y)
 	object.SetFacing(facing)
 	return object
+}
+
+func (g *Game) RemoveObject(object *Object) {
+	var index int
+	for i, copy := range g.objects {
+		if copy.x == object.x && copy.y == object.y {
+			index = i
+			break
+		}
+	}
+	g.objects = append(g.objects[:index], g.objects[index+1:]...)
 }
 
 // DrawObjects will draw every Tile in the game's list of objects.
