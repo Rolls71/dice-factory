@@ -43,6 +43,7 @@ func (i *Item) SetID(id uint64) {
 func (i *Item) Step() {
 	xDelta := ToReal(i.xTarget) - i.x
 	if math.Pow(xDelta, 2) < 1 {
+		// not moving full speed causes building delay
 		i.x = ToReal(i.xTarget)
 	} else {
 		if xDelta > 0 {

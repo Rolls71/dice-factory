@@ -59,34 +59,48 @@ func (o *Object) Rotate() {
 	o.facing = (o.facing + 1) % 4
 }
 
-// MoveItemOn will set the target of an item on the object to a neighbor.
-// First it checks if theres an item targeting the belt, if there is it checks
-// if it's on the object. If its on the object, it checks if the obhect is
-// pointing at another object. If theres somewhere to send the item, it checks
-// if the next object is targeted by another item. If its not it will retarget
-// the item.
-func (g *Game) MoveItemOn(object *Object) {
+func (g *Game) IsItemOn(object *Object) (bool, *Item) {
 	// is there an item targeting the belt?
 	isItem, item := g.GetItemTargeting(object)
 	if !isItem {
-		return
+		return false, item
 	}
 
 	// is the item currently on the belt?
 	if item.x != ToReal(object.x) ||
 		item.y != ToReal(object.y) {
-		return
+		return false, item
 	}
 
+	return true, item
+}
+
+func (g *Game) IsItemMoveable(object *Object) (bool, *Object) {
 	// is the belt pointing at an object?
 	isNeighbor, neighbor := g.GetNeighborOf(object)
 	if !isNeighbor {
-		return
+		return false, neighbor
 	}
 
 	// is there an item targeting the neighbor?
-	isItem, _ = g.GetItemTargeting(neighbor)
+	isItem, _ := g.GetItemTargeting(neighbor)
 	if isItem {
+		return false, neighbor
+	}
+
+	return true, neighbor
+}
+
+// MoveItemOn tests IsItemOn and IsItemMoveable before setting an item's
+// target position to a neighbor.
+func (g *Game) MoveItemOn(object *Object) {
+	isItemOn, item := g.IsItemOn(object)
+	if !isItemOn {
+		return
+	}
+
+	isItemMoveable, neighbor := g.IsItemMoveable(object)
+	if !isItemMoveable {
 		return
 	}
 
@@ -106,20 +120,15 @@ func (g *Game) UpdateObjects() {
 			if g.time%uint64(frameRate*buildCycleSeconds) == 0 {
 				g.SpawnItem(PlainItem, object)
 			}
-			g.MoveItemOn(object)
+			isItemMoveable, _ := g.IsItemMoveable(object)
+			if isItemMoveable {
+				g.MoveItemOn(object)
+			}
 		case Collector:
-			// is there an item targeting the belt?
-			isItem, item := g.GetItemTargeting(object)
-			if !isItem {
-				continue
+			isItemOn, item := g.IsItemOn(object)
+			if isItemOn {
+				delete(g.items, item.id)
 			}
-
-			// is the item currently on the belt?
-			if item.x != ToReal(object.x) ||
-				item.y != ToReal(object.y) {
-				continue
-			}
-			delete(g.items, item.id)
 		}
 	}
 }
