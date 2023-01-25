@@ -43,8 +43,9 @@ type Game struct {
 	tileStage  [stageSizeY][stageSizeX]int // Stores Tile instances to be drawn.
 	objectSet  []Object                    // Stores different types of Objects.
 	objects    []Object                    // Stores Object instances to be drawn.
-	itemSet    []Item                      // Stores different types of Items.
-	items      []Item                      // Stores Item instances to be drawn.
+	itemSet    map[ItemType]*Item          // Stores different types of Items.
+	items      map[uint64]*Item            // Stores Item instances to be drawn.
+	itemID     uint64                      // Stores the id of the last item made.
 	isDragging bool                        // Is an Object being dragged
 }
 
@@ -55,8 +56,8 @@ func NewGame() *Game {
 		tileStage:  [stageSizeY][stageSizeX]int{},
 		objectSet:  []Object{},
 		objects:    []Object{},
-		itemSet:    []Item{},
-		items:      []Item{},
+		itemSet:    map[ItemType]*Item{},
+		items:      map[uint64]*Item{},
 		isDragging: false,
 	}
 
@@ -117,7 +118,7 @@ func (g *Game) Update() error {
 		fmt.Printf("objects: ")
 		fmt.Println(g.objects)
 		fmt.Print("items: ")
-		fmt.Println(g.items)
+		fmt.Println(*g.items[1])
 	}
 	g.UpdateInput()
 	g.UpdateObjects()

@@ -4,6 +4,7 @@ import (
 	_ "image/png"
 	"log"
 	"math"
+	"sort"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -18,6 +19,7 @@ const (
 const itemSpeed float64 = 32 // pixels per second
 
 type Item struct {
+	id               uint64
 	itemType         ItemType
 	image            *ebiten.Image
 	x, y             float64
@@ -32,6 +34,10 @@ func (i *Item) SetRealCoordinate(x, y float64) {
 func (i *Item) SetTargetPosition(x, y int) {
 	i.xTarget = x
 	i.yTarget = y
+}
+
+func (i *Item) SetID(id uint64) {
+	i.id = id
 }
 
 func (i *Item) Step() {
@@ -62,86 +68,61 @@ func (i *Item) Step() {
 // depending on their type. Each Item type may have different functionality.
 func (g *Game) UpdateItems() {
 	for _, copy := range g.items {
-		_, item := g.GetItemTargetingPosition(copy.xTarget, copy.yTarget)
-		switch item.itemType {
+		isObject, _ := g.GetObjectAt(copy.xTarget, copy.yTarget)
+		if !isObject {
+			delete(g.items, copy.id)
+		}
+		switch copy.itemType {
 		case PlainItem:
 			// has item reached target position?
-			if item.x == ToReal(item.xTarget) &&
-				item.y == ToReal(item.yTarget) {
+			if copy.x == ToReal(copy.xTarget) &&
+				copy.y == ToReal(copy.yTarget) {
 				continue
 			}
-			item.Step()
-		}
-		isObject, _ := g.GetObjectAt(item.xTarget, item.yTarget)
-		if !isObject {
-			g.RemoveItem(item)
+			g.items[copy.id].Step()
 		}
 	}
 }
 
 // NewItem will create a new item of given image and type
 // Other struct elements will default
-func (g *Game) NewItem(item ItemType, imageName string) {
+func (g *Game) NewItem(itemType ItemType, imageName string) {
 	path := "images/" + imageName
 	img, _, err := ebitenutil.NewImageFromFile(path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	g.itemSet = append(g.itemSet, Item{
-		itemType: item,
+	g.itemSet[itemType] = &Item{
+		itemType: itemType,
 		image:    img,
-	})
+	}
+}
+
+func (g *Game) NextID() uint64 {
+	g.itemID += 1
+	return g.itemID
 }
 
 // SpawnItem will create an instance of an Item in the set.
 // The Item's position and Target position will be set to that of the creator.
-func (g *Game) SpawnItem(itemType ItemType, creator *Object) *Item {
-	len := len(g.items)
-	for _, item := range g.itemSet {
-		if item.itemType == itemType {
-			g.items = append(g.items, item)
-			break
-		}
-	}
-	item := &g.items[len]
+func (g *Game) SpawnItem(itemType ItemType, creator *Object) uint64 {
+	item := *g.itemSet[itemType]
 	x, y := creator.x, creator.y
+	item.SetID(g.NextID())
 	item.SetRealCoordinate(ToReal(x), ToReal(y))
 	item.SetTargetPosition(x, y)
-	return item
-}
 
-func (g *Game) RemoveItem(item *Item) {
-	var index int
-	for i, copy := range g.items {
-		if copy.xTarget == item.xTarget && copy.yTarget == item.yTarget {
-			index = i
-			break
-		}
-	}
-	if index != len(g.items)-1 {
-		g.items = append(g.items[:index], g.items[index+1:]...)
-	} else {
-		g.items = g.items[:index]
-	}
+	g.items[item.id] = &item
+	return item.id
 }
 
 // GetItemTargeting will find an Item targeting a given Object.
 // if an item is not found, it will return false and an Empty Object Reference.
 func (g *Game) GetItemTargeting(object *Object) (bool, *Item) {
-	for index, copy := range g.items {
+	for _, copy := range g.items {
 		if copy.xTarget == object.x &&
 			copy.yTarget == object.y {
-			return true, &g.items[index]
-		}
-	}
-	return false, &Item{}
-}
-
-func (g *Game) GetItemTargetingPosition(x, y int) (bool, *Item) {
-	for index, copy := range g.items {
-		if copy.xTarget == x &&
-			copy.yTarget == y {
-			return true, &g.items[index]
+			return true, g.items[copy.id]
 		}
 	}
 	return false, &Item{}
@@ -149,9 +130,19 @@ func (g *Game) GetItemTargetingPosition(x, y int) (bool, *Item) {
 
 // DrawItems draws each Item at a pixel coordinate
 func (g *Game) DrawItems(screen *ebiten.Image) {
+	itemArray := []*Item{}
 	for _, copy := range g.items {
+		itemArray = append(itemArray, copy)
+	}
+
+	sort.SliceStable(itemArray, func(i, j int) bool {
+		return itemArray[i].id < itemArray[j].id
+	})
+
+	for _, copy := range itemArray {
 		options := &ebiten.DrawImageOptions{}
 		options.GeoM.Translate(float64(copy.x), float64(copy.y))
 		screen.DrawImage(copy.image, options)
 	}
+
 }
