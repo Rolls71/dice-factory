@@ -37,7 +37,6 @@ type Object struct {
 	x          int // tile coord
 	y          int // tile coord
 
-	cycle     uint64       // used for tracking build cycles
 	id        uint64       // unique generated identifier
 	facing    ObjectFacing // default South
 	isDragged bool         // default false
@@ -104,9 +103,7 @@ func (g *Game) UpdateObjects() {
 		case ConveyorBelt:
 			g.MoveItemOn(object)
 		case Builder:
-			object.cycle += 1
-			if object.cycle >= 60 {
-				object.cycle = 0
+			if g.time%uint64(frameRate*buildCycleSeconds) == 0 {
 				g.SpawnItem(PlainItem, object)
 			}
 			g.MoveItemOn(object)
@@ -114,13 +111,13 @@ func (g *Game) UpdateObjects() {
 			// is there an item targeting the belt?
 			isItem, item := g.GetItemTargeting(object)
 			if !isItem {
-				return
+				continue
 			}
 
 			// is the item currently on the belt?
 			if item.x != ToReal(object.x) ||
 				item.y != ToReal(object.y) {
-				return
+				continue
 			}
 			delete(g.items, item.id)
 		}
