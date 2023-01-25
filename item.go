@@ -19,11 +19,11 @@ const (
 const itemSpeed float64 = 32 // pixels per second
 
 type Item struct {
-	id               uint64
 	itemType         ItemType
 	image            *ebiten.Image
 	x, y             float64
-	xTarget, yTarget int // index of target object
+	id               uint64 // unique generated identifier
+	xTarget, yTarget int    // index of target object
 }
 
 func (i *Item) SetRealCoordinate(x, y float64) {
@@ -71,6 +71,7 @@ func (g *Game) UpdateItems() {
 		isObject, _ := g.GetObjectAt(copy.xTarget, copy.yTarget)
 		if !isObject {
 			delete(g.items, copy.id)
+			continue
 		}
 		switch copy.itemType {
 		case PlainItem:
@@ -98,14 +99,9 @@ func (g *Game) NewItem(itemType ItemType, imageName string) {
 	}
 }
 
-func (g *Game) NextID() uint64 {
-	g.itemID += 1
-	return g.itemID
-}
-
 // SpawnItem will create an instance of an Item in the set.
 // The Item's position and Target position will be set to that of the creator.
-func (g *Game) SpawnItem(itemType ItemType, creator *Object) uint64 {
+func (g *Game) SpawnItem(itemType ItemType, creator *Object) *Item {
 	item := *g.itemSet[itemType]
 	x, y := creator.x, creator.y
 	item.SetID(g.NextID())
@@ -113,7 +109,7 @@ func (g *Game) SpawnItem(itemType ItemType, creator *Object) uint64 {
 	item.SetTargetPosition(x, y)
 
 	g.items[item.id] = &item
-	return item.id
+	return &item
 }
 
 // GetItemTargeting will find an Item targeting a given Object.

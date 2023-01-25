@@ -31,8 +31,13 @@ type Object struct {
 	x          int // tile coord
 	y          int // tile coord
 
+	id        uint64       // unique generated identifier
 	facing    ObjectFacing // default South
 	isDragged bool         // default false
+}
+
+func (o *Object) SetID(id uint64) {
+	o.id = id
 }
 
 func (o *Object) SetPosition(x, y int) {
@@ -86,12 +91,11 @@ func (g *Game) MoveItemOn(object *Object) {
 // UpdateObjects will iterate through each Object and switch,
 // depending on their type. Each Object type may have different functionality
 func (g *Game) UpdateObjects() {
-	for index := range g.objects {
-		object := &g.objects[index]
+	for _, copy := range g.objects {
+		object := g.objects[copy.id]
 		switch object.objectType {
 		case ConveyorBelt:
 			g.MoveItemOn(object)
-
 		}
 	}
 }
@@ -128,10 +132,10 @@ func (g *Game) GetNeighborOf(o *Object) (bool, *Object) {
 // GetObjectAt returns true if there is an Object at the given coordinates
 // An array of every Object at that coordinate is also returned.
 func (g *Game) GetObjectAt(x, y int) (bool, *Object) {
-	for index, copy := range g.objects {
+	for _, copy := range g.objects {
 		if copy.x == x &&
 			copy.y == y {
-			return true, &g.objects[index]
+			return true, g.objects[copy.id]
 		}
 	}
 	return false, &Object{}
@@ -145,10 +149,10 @@ func (g *Game) NewObject(objectType ObjectType, imageName string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	g.objectSet = append(g.objectSet, Object{
+	g.objectSet[objectType] = &Object{
 		objectType: objectType,
 		image:      img,
-	})
+	}
 }
 
 // SpawnObject constructs a new object of ObjectType
@@ -157,28 +161,13 @@ func (g *Game) SpawnObject(
 	x, y int,
 	facing ObjectFacing,
 ) *Object {
-	len := len(g.objects)
-	for _, object := range g.objectSet {
-		if object.objectType == objectType {
-			g.objects = append(g.objects, object)
-			break
-		}
-	}
-	object := &g.objects[len]
+	object := *g.objectSet[objectType]
+	object.SetID(g.NextID())
 	object.SetPosition(x, y)
 	object.SetFacing(facing)
-	return object
-}
 
-func (g *Game) RemoveObject(object *Object) {
-	var index int
-	for i, copy := range g.objects {
-		if copy.x == object.x && copy.y == object.y {
-			index = i
-			break
-		}
-	}
-	g.objects = append(g.objects[:index], g.objects[index+1:]...)
+	g.objects[object.id] = &object
+	return &object
 }
 
 // DrawObjects will draw every Tile in the game's list of objects.

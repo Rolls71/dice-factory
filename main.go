@@ -41,12 +41,18 @@ func ToTile(f float64) int {
 type Game struct {
 	tileSet    []Tile                      // Stores different types of Tiles.
 	tileStage  [stageSizeY][stageSizeX]int // Stores Tile instances to be drawn.
-	objectSet  []Object                    // Stores different types of Objects.
-	objects    []Object                    // Stores Object instances to be drawn.
+	objectSet  map[ObjectType]*Object      // Stores different types of Objects.
+	objects    map[uint64]*Object          // Stores Object instances to be drawn.
+	objectID   uint64                      // Stores id of last object spawned.
 	itemSet    map[ItemType]*Item          // Stores different types of Items.
 	items      map[uint64]*Item            // Stores Item instances to be drawn.
-	itemID     uint64                      // Stores the id of the last item made.
+	id         uint64                      // Stores id of last item/object made.
 	isDragging bool                        // Is an Object being dragged
+}
+
+func (g *Game) NextID() uint64 {
+	g.id += 1
+	return g.id
 }
 
 // NewGame constructs and returns a Game struct.
@@ -54,8 +60,8 @@ func NewGame() *Game {
 	game := Game{
 		tileSet:    []Tile{},
 		tileStage:  [stageSizeY][stageSizeX]int{},
-		objectSet:  []Object{},
-		objects:    []Object{},
+		objectSet:  map[ObjectType]*Object{},
+		objects:    map[uint64]*Object{},
 		itemSet:    map[ItemType]*Item{},
 		items:      map[uint64]*Item{},
 		isDragging: false,
@@ -102,14 +108,17 @@ func NewGame() *Game {
 
 // Update calls the game's update functions
 func (g *Game) Update() error {
+	x, y := g.GetCursorCoordinates()
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
-		g.SpawnItem(PlainItem, &g.objects[0])
-	}
-	if inpututil.IsKeyJustPressed(ebiten.Key1) {
-		x, y := g.GetCursorCoordinates()
 		isObject, object := g.GetObjectAt(x, y)
 		if isObject {
-			g.RemoveObject(object)
+			g.SpawnItem(PlainItem, object)
+		}
+	}
+	if inpututil.IsKeyJustPressed(ebiten.Key1) {
+		isObject, object := g.GetObjectAt(x, y)
+		if isObject {
+			delete(g.objects, object.id)
 		} else {
 			g.SpawnObject(ConveyorBelt, x, y, South)
 		}
