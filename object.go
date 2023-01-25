@@ -132,9 +132,9 @@ func (g *Game) UpdateObjects() {
 				isItemMoveable, _ := g.IsItemMoveable(object)
 				if isItemMoveable {
 					g.SpawnItem(PlainItem, object)
-					g.MoveItemOn(object)
 				}
 			}
+			g.MoveItemOn(object)
 		case Collector:
 			isItemOn, item := g.IsItemOn(object)
 			if isItemOn {

@@ -6,13 +6,12 @@ import (
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 const (
 	screenWidth  int = 640
-	screenHeight int = 480
+	screenHeight int = 640 // 480
 )
 
 const (
@@ -189,8 +188,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.DrawTiles(screen)
 	g.DrawObjects(screen)
 	g.DrawItems(screen)
-	dicePointString := fmt.Sprintf("Dice Points: %d\n", g.data.dicePoints)
-	ebitenutil.DebugPrint(screen, dicePointString)
+	g.DrawHUD(screen)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (
