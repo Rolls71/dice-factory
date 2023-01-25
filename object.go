@@ -13,6 +13,11 @@ const (
 	buildCycleSeconds = 3 // Seconds per build cycle.
 )
 
+const (
+	d6Min = 1
+	d6Max = 6
+)
+
 type ObjectType int
 
 const (
@@ -124,15 +129,16 @@ func (g *Game) UpdateObjects() {
 			g.MoveItemOn(object)
 		case Builder:
 			if g.time%uint64(frameRate*buildCycleSeconds) == 0 {
-				g.SpawnItem(PlainItem, object)
-			}
-			isItemMoveable, _ := g.IsItemMoveable(object)
-			if isItemMoveable {
-				g.MoveItemOn(object)
+				isItemMoveable, _ := g.IsItemMoveable(object)
+				if isItemMoveable {
+					g.SpawnItem(PlainItem, object)
+					g.MoveItemOn(object)
+				}
 			}
 		case Collector:
 			isItemOn, item := g.IsItemOn(object)
 			if isItemOn {
+				g.data.RollDie(d6Min, d6Max)
 				delete(g.items, item.id)
 			}
 		}

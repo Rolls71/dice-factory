@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
@@ -40,15 +41,17 @@ func ToTile(f float64) int {
 
 // Game stores all data relevant to the running game
 type Game struct {
-	tileSet    []Tile                      // Stores different types of Tiles.
-	tileStage  [stageSizeY][stageSizeX]int // Stores Tile instances to be drawn.
-	objectSet  map[ObjectType]*Object      // Stores different types of Objects.
-	objects    map[uint64]*Object          // Stores Object instances to be drawn.
-	itemSet    map[ItemType]*Item          // Stores different types of Items.
-	items      map[uint64]*Item            // Stores Item instances to be drawn.
-	time       uint64                      // Stores current tick
-	id         uint64                      // Stores id of last item/object made.
-	isDragging bool                        // Is an Object being dragged
+	tileSet   []Tile                      // Stores different types of Tiles.
+	tileStage [stageSizeY][stageSizeX]int // Stores Tile instances to be drawn.
+	objectSet map[ObjectType]*Object      // Stores different types of Objects.
+	objects   map[uint64]*Object          // Stores Object instances to be drawn.
+	itemSet   map[ItemType]*Item          // Stores different types of Items.
+	items     map[uint64]*Item            // Stores Item instances to be drawn.
+	data      Data
+
+	time       uint64 // Stores current tick
+	id         uint64 // Stores id of last item/object made.
+	isDragging bool   // Is an Object being dragged
 
 }
 
@@ -61,13 +64,13 @@ func (g *Game) NextID() uint64 {
 // NewGame constructs and returns a Game struct.
 func NewGame() *Game {
 	game := Game{
-		tileSet:    []Tile{},
-		tileStage:  [stageSizeY][stageSizeX]int{},
-		objectSet:  map[ObjectType]*Object{},
-		objects:    map[uint64]*Object{},
-		itemSet:    map[ItemType]*Item{},
-		items:      map[uint64]*Item{},
-		isDragging: false,
+		tileSet:   []Tile{},
+		tileStage: [stageSizeY][stageSizeX]int{},
+		objectSet: map[ObjectType]*Object{},
+		objects:   map[uint64]*Object{},
+		itemSet:   map[ItemType]*Item{},
+		items:     map[uint64]*Item{},
+		data:      Data{},
 	}
 
 	// initialise tiles
@@ -186,6 +189,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.DrawTiles(screen)
 	g.DrawObjects(screen)
 	g.DrawItems(screen)
+	dicePointString := fmt.Sprintf("Dice Points: %d\n", g.data.dicePoints)
+	ebitenutil.DebugPrint(screen, dicePointString)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (
