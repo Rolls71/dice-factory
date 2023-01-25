@@ -100,6 +100,7 @@ func NewGame() *Game {
 	game.NewObject(ConveyorBelt, "conveyor_belt.png")
 	game.NewObject(Builder, "plain_object.png")
 	game.NewObject(Collector, "plain_object.png")
+	game.NewObject(Upgrader, "plain_object.png")
 
 	// builders
 	builder1 := game.SpawnObject(Builder, 2, 2, South)
@@ -112,7 +113,7 @@ func NewGame() *Game {
 	game.SpawnObject(ConveyorBelt, 6, 3, South)
 
 	// collecting east belt
-	game.SpawnObject(ConveyorBelt, 2, 4, East)
+	game.SpawnObject(Upgrader, 2, 4, East)
 	game.SpawnObject(ConveyorBelt, 3, 4, East)
 	game.SpawnObject(ConveyorBelt, 4, 4, East)
 	game.SpawnObject(ConveyorBelt, 5, 4, East)
@@ -134,10 +135,12 @@ func NewGame() *Game {
 	game.SpawnObject(Collector, 6, 7, East)
 
 	//initialise items
-	game.NewItem(PlainItem, "d6_6.png")
-	game.SpawnItem(PlainItem, builder1)
-	game.SpawnItem(PlainItem, builder2)
-	game.SpawnItem(PlainItem, builder3)
+	game.NewItem(PlainD6, "d6_6.png")
+	game.NewItem(GoldD6, "gold_d6_6.png")
+
+	game.SpawnItem(PlainD6, builder1)
+	game.SpawnItem(PlainD6, builder2)
+	game.SpawnItem(PlainD6, builder3)
 
 	return &game
 }
@@ -151,7 +154,7 @@ func (g *Game) Update() error {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
 		isObject, object := g.GetObjectAt(x, y)
 		if isObject {
-			g.SpawnItem(PlainItem, object)
+			g.SpawnItem(PlainD6, object)
 		}
 	}
 	if inpututil.IsKeyJustPressed(ebiten.Key1) {

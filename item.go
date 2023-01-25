@@ -4,6 +4,7 @@ import (
 	_ "image/png"
 	"log"
 	"math"
+	"math/rand"
 	"sort"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -13,7 +14,14 @@ import (
 type ItemType int
 
 const (
-	PlainItem ItemType = iota
+	PlainD6 ItemType = iota
+	GoldD6
+)
+
+const (
+	d6Min          int    = 1
+	d6Max          int    = 6
+	goldMultiplier uint64 = 2
 )
 
 const itemSpeed float64 = 32 // pixels per second
@@ -38,6 +46,17 @@ func (i *Item) SetTargetPosition(x, y int) {
 
 func (i *Item) SetID(id uint64) {
 	i.id = id
+}
+
+func (i *Item) Value() uint64 {
+	switch i.itemType {
+	case PlainD6:
+		return uint64(rand.Intn(d6Max) + d6Min)
+	case GoldD6:
+		return uint64(rand.Intn(d6Max)+d6Min) * goldMultiplier
+	}
+	log.Fatal("Error: unknown itemType")
+	return 0
 }
 
 // Step moves an item itemSpeed units per second towards target
@@ -78,14 +97,14 @@ func (g *Game) UpdateItems() {
 			continue
 		}
 		switch copy.itemType {
-		case PlainItem:
-			// has item reached target position?
-			if copy.x == ToReal(copy.xTarget) &&
-				copy.y == ToReal(copy.yTarget) {
-				continue
-			}
-			g.items[copy.id].Step()
+		case PlainD6:
 		}
+		// has item reached target position?
+		if copy.x == ToReal(copy.xTarget) &&
+			copy.y == ToReal(copy.yTarget) {
+			continue
+		}
+		g.items[copy.id].Step()
 	}
 }
 
@@ -114,6 +133,11 @@ func (g *Game) SpawnItem(itemType ItemType, creator *Object) *Item {
 
 	g.items[item.id] = &item
 	return &item
+}
+
+func (g *Game) SetItem(item *Item, itemType ItemType) {
+	item.itemType = itemType
+	item.image = g.itemSet[itemType].image
 }
 
 // GetItemTargeting will find an Item targeting a given Object.

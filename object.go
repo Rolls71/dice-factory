@@ -13,11 +13,6 @@ const (
 	buildCycleSeconds = 3 // Seconds per build cycle.
 )
 
-const (
-	d6Min = 1
-	d6Max = 6
-)
-
 type ObjectType int
 
 const (
@@ -25,6 +20,7 @@ const (
 	ConveyorBelt            // Moves items onto facing neighbor.
 	Builder                 // Spawns a new item every build cycle and moves.
 	Collector               // Deletes items
+	Upgrader                // Upgrades items
 )
 
 type ObjectFacing int
@@ -131,16 +127,22 @@ func (g *Game) UpdateObjects() {
 			if g.time%uint64(frameRate*buildCycleSeconds) == 0 {
 				isItemMoveable, _ := g.IsItemMoveable(object)
 				if isItemMoveable {
-					g.SpawnItem(PlainItem, object)
+					g.SpawnItem(PlainD6, object)
 				}
 			}
 			g.MoveItemOn(object)
 		case Collector:
 			isItemOn, item := g.IsItemOn(object)
 			if isItemOn {
-				g.data.RollDie(d6Min, d6Max)
+				g.data.AddDie(item.Value())
 				delete(g.items, item.id)
 			}
+		case Upgrader:
+			isItemOn, item := g.IsItemOn(object)
+			if isItemOn {
+				g.SetItem(item, GoldD6)
+			}
+			g.MoveItemOn(object)
 		}
 	}
 }
