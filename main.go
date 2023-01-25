@@ -19,7 +19,8 @@ const (
 )
 
 const (
-	frameDelta float64 = 1.0 / 60.0
+	frameRate  int     = 60
+	frameDelta float64 = 1.0 / float64(frameRate)
 )
 
 const (
@@ -43,11 +44,12 @@ type Game struct {
 	tileStage  [stageSizeY][stageSizeX]int // Stores Tile instances to be drawn.
 	objectSet  map[ObjectType]*Object      // Stores different types of Objects.
 	objects    map[uint64]*Object          // Stores Object instances to be drawn.
-	objectID   uint64                      // Stores id of last object spawned.
 	itemSet    map[ItemType]*Item          // Stores different types of Items.
 	items      map[uint64]*Item            // Stores Item instances to be drawn.
+	time       uint64                      // Stores current tick
 	id         uint64                      // Stores id of last item/object made.
 	isDragging bool                        // Is an Object being dragged
+
 }
 
 func (g *Game) NextID() uint64 {
@@ -88,26 +90,55 @@ func NewGame() *Game {
 		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	})
 
-	game.NewObject(ConveyorBelt, "conveyor_belt.png")
 	game.NewObject(PlainObject, "plain_object.png")
+	game.NewObject(ConveyorBelt, "conveyor_belt.png")
+	game.NewObject(Builder, "plain_object.png")
+	game.NewObject(Collector, "plain_object.png")
 
-	start := game.SpawnObject(ConveyorBelt, 7, 7, South)
+	// builders
+	builder1 := game.SpawnObject(Builder, 2, 2, South)
+	builder2 := game.SpawnObject(Builder, 4, 2, South)
+	builder3 := game.SpawnObject(Builder, 6, 2, South)
+
+	// builder extensions
+	game.SpawnObject(ConveyorBelt, 2, 3, South)
+	game.SpawnObject(ConveyorBelt, 4, 3, South)
+	game.SpawnObject(ConveyorBelt, 6, 3, South)
+
+	// collecting east belt
+	game.SpawnObject(ConveyorBelt, 2, 4, East)
+	game.SpawnObject(ConveyorBelt, 3, 4, East)
+	game.SpawnObject(ConveyorBelt, 4, 4, East)
+	game.SpawnObject(ConveyorBelt, 5, 4, East)
+	game.SpawnObject(ConveyorBelt, 6, 4, East)
+
+	// connecting south belt
+	game.SpawnObject(ConveyorBelt, 7, 4, South)
+	game.SpawnObject(ConveyorBelt, 7, 5, South)
+	game.SpawnObject(ConveyorBelt, 7, 6, South)
+
+	// cube
+	game.SpawnObject(ConveyorBelt, 7, 7, South)
 	game.SpawnObject(ConveyorBelt, 7, 8, South)
 	game.SpawnObject(ConveyorBelt, 7, 9, West)
 	game.SpawnObject(ConveyorBelt, 6, 9, West)
 	game.SpawnObject(ConveyorBelt, 5, 9, North)
 	game.SpawnObject(ConveyorBelt, 5, 8, North)
 	game.SpawnObject(ConveyorBelt, 5, 7, East)
-	game.SpawnObject(ConveyorBelt, 6, 7, East)
+	game.SpawnObject(Collector, 6, 7, East)
 
 	game.NewItem(PlainItem, "d6_6.png")
-	game.SpawnItem(PlainItem, start)
+	game.SpawnItem(PlainItem, builder1)
+	game.SpawnItem(PlainItem, builder2)
+	game.SpawnItem(PlainItem, builder3)
 
 	return &game
 }
 
 // Update calls the game's update functions
 func (g *Game) Update() error {
+	g.time += 1
+
 	x, y := g.GetCursorCoordinates()
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
 		isObject, object := g.GetObjectAt(x, y)
@@ -121,6 +152,14 @@ func (g *Game) Update() error {
 			delete(g.objects, object.id)
 		} else {
 			g.SpawnObject(ConveyorBelt, x, y, South)
+		}
+	}
+	if inpututil.IsKeyJustPressed(ebiten.Key2) {
+		isObject, object := g.GetObjectAt(x, y)
+		if isObject {
+			delete(g.objects, object.id)
+		} else {
+			g.SpawnObject(Builder, x, y, South)
 		}
 	}
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonMiddle) {

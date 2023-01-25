@@ -9,11 +9,17 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
+const (
+	buildCycleSeconds = 3 // Seconds per build cycle.
+)
+
 type ObjectType int
 
 const (
 	PlainObject ObjectType = iota
 	ConveyorBelt
+	Builder
+	Collector
 )
 
 type ObjectFacing int
@@ -31,6 +37,7 @@ type Object struct {
 	x          int // tile coord
 	y          int // tile coord
 
+	cycle     uint64       // used for tracking build cycles
 	id        uint64       // unique generated identifier
 	facing    ObjectFacing // default South
 	isDragged bool         // default false
@@ -96,6 +103,26 @@ func (g *Game) UpdateObjects() {
 		switch object.objectType {
 		case ConveyorBelt:
 			g.MoveItemOn(object)
+		case Builder:
+			object.cycle += 1
+			if object.cycle >= 60 {
+				object.cycle = 0
+				g.SpawnItem(PlainItem, object)
+			}
+			g.MoveItemOn(object)
+		case Collector:
+			// is there an item targeting the belt?
+			isItem, item := g.GetItemTargeting(object)
+			if !isItem {
+				return
+			}
+
+			// is the item currently on the belt?
+			if item.x != ToReal(object.x) ||
+				item.y != ToReal(object.y) {
+				return
+			}
+			delete(g.items, item.id)
 		}
 	}
 }
