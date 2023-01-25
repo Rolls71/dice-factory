@@ -16,10 +16,10 @@ const (
 type ObjectType int
 
 const (
-	PlainObject ObjectType = iota
-	ConveyorBelt
-	Builder
-	Collector
+	PlainObject  ObjectType = iota
+	ConveyorBelt            // Moves items onto facing neighbor.
+	Builder                 // Spawns a new item every build cycle and moves.
+	Collector               // Deletes items
 )
 
 type ObjectFacing int
@@ -59,6 +59,9 @@ func (o *Object) Rotate() {
 	o.facing = (o.facing + 1) % 4
 }
 
+// IsItemOn tests if there is an item targeting the belt, and if it's currently
+// on the belt.
+// If so, it returns the item
 func (g *Game) IsItemOn(object *Object) (bool, *Item) {
 	// is there an item targeting the belt?
 	isItem, item := g.GetItemTargeting(object)
@@ -75,6 +78,9 @@ func (g *Game) IsItemOn(object *Object) (bool, *Item) {
 	return true, item
 }
 
+// IsItemMoveable tests if the belt is pointing at an object and if theres an
+// item targeting the neighbor.
+// If so, it returns the neighbor
 func (g *Game) IsItemMoveable(object *Object) (bool, *Object) {
 	// is the belt pointing at an object?
 	isNeighbor, neighbor := g.GetNeighborOf(object)

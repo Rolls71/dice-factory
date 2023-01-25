@@ -52,6 +52,7 @@ type Game struct {
 
 }
 
+// NextID increments the stored id and returns it
 func (g *Game) NextID() uint64 {
 	g.id += 1
 	return g.id
@@ -69,9 +70,11 @@ func NewGame() *Game {
 		isDragging: false,
 	}
 
+	// initialise tiles
 	game.NewTile("basic_grass", "basic_grass.png") // ID = 0
 	game.NewTile("long_grass", "long_grass.png")   // ID = 1
 
+	// set up tile stage
 	game.SetTileStage([stageSizeY][stageSizeX]int{
 		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 		{0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -90,6 +93,7 @@ func NewGame() *Game {
 		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	})
 
+	// initialise objects
 	game.NewObject(PlainObject, "plain_object.png")
 	game.NewObject(ConveyorBelt, "conveyor_belt.png")
 	game.NewObject(Builder, "plain_object.png")
@@ -127,6 +131,7 @@ func NewGame() *Game {
 	game.SpawnObject(ConveyorBelt, 5, 7, East)
 	game.SpawnObject(Collector, 6, 7, East)
 
+	//initialise items
 	game.NewItem(PlainItem, "d6_6.png")
 	game.SpawnItem(PlainItem, builder1)
 	game.SpawnItem(PlainItem, builder2)
@@ -139,6 +144,7 @@ func NewGame() *Game {
 func (g *Game) Update() error {
 	g.time += 1
 
+	// Temporary inputs before system is put in place
 	x, y := g.GetCursorCoordinates()
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
 		isObject, object := g.GetObjectAt(x, y)
@@ -168,6 +174,7 @@ func (g *Game) Update() error {
 		fmt.Print("items: ")
 		fmt.Println(*g.items[1])
 	}
+
 	g.UpdateInput()
 	g.UpdateObjects()
 	g.UpdateItems()

@@ -40,6 +40,9 @@ func (i *Item) SetID(id uint64) {
 	i.id = id
 }
 
+// Step moves an item itemSpeed units per second towards target
+//
+// TODO: fix minor delay when target is reached
 func (i *Item) Step() {
 	xDelta := ToReal(i.xTarget) - i.x
 	if math.Pow(xDelta, 2) < 1 {
