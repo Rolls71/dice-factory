@@ -27,11 +27,12 @@ const (
 const itemSpeed float64 = 32 // pixels per second
 
 type Item struct {
-	itemType         ItemType
-	image            *ebiten.Image
-	x, y             float64
-	id               uint64 // unique generated identifier
-	xTarget, yTarget int    // index of target object
+	itemType           ItemType
+	image              *ebiten.Image
+	x, y               float64
+	id                 uint64  // unique generated identifier
+	xTarget, yTarget   int     // index of target object
+	xCatchup, yCatchup float64 // if item is behind, saves lost distance
 }
 
 func (i *Item) SetRealCoordinate(x, y float64) {
@@ -60,30 +61,35 @@ func (i *Item) Value() uint64 {
 }
 
 // Step moves an item itemSpeed units per second towards target
-//
-// TODO: fix minor delay when target is reached
 func (i *Item) Step() {
 	xDelta := ToReal(i.xTarget) - i.x
-	if math.Pow(xDelta, 2) < 1 {
-		// not moving full speed causes building delay
+	if math.Abs(xDelta) < itemSpeed*frameDelta {
 		i.x = ToReal(i.xTarget)
+		if i.x != ToReal(i.xTarget) {
+			i.xCatchup += itemSpeed*frameDelta - math.Abs(xDelta)
+		}
 	} else {
 		if xDelta > 0 {
-			i.x += itemSpeed * frameDelta
+			i.x += itemSpeed*frameDelta + i.xCatchup
 		} else {
-			i.x -= itemSpeed * frameDelta
+			i.x -= itemSpeed*frameDelta + i.xCatchup
 		}
+		i.xCatchup = 0
 	}
 
 	yDelta := ToReal(i.yTarget) - i.y
-	if math.Pow(yDelta, 2) < 1 {
+	if math.Abs(yDelta) < itemSpeed*frameDelta {
 		i.y = ToReal(i.yTarget)
+		if i.y != ToReal(i.yTarget) {
+			i.yCatchup += itemSpeed*frameDelta - math.Abs(yDelta)
+		}
 	} else {
 		if yDelta > 0 {
-			i.y += itemSpeed * frameDelta
+			i.y += itemSpeed*frameDelta + i.yCatchup
 		} else {
-			i.y -= itemSpeed * frameDelta
+			i.y -= itemSpeed*frameDelta + i.yCatchup
 		}
+		i.yCatchup = 0
 	}
 }
 
