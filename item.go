@@ -64,10 +64,10 @@ func (i *Item) Value() uint64 {
 func (i *Item) Step() {
 	xDelta := ToReal(i.xTarget) - i.x
 	if math.Abs(xDelta) < itemSpeed*frameDelta {
-		i.x = ToReal(i.xTarget)
 		if i.x != ToReal(i.xTarget) {
 			i.xCatchup += itemSpeed*frameDelta - math.Abs(xDelta)
 		}
+		i.x = ToReal(i.xTarget)
 	} else {
 		if xDelta > 0 {
 			i.x += itemSpeed*frameDelta + i.xCatchup
@@ -79,10 +79,10 @@ func (i *Item) Step() {
 
 	yDelta := ToReal(i.yTarget) - i.y
 	if math.Abs(yDelta) < itemSpeed*frameDelta {
-		i.y = ToReal(i.yTarget)
 		if i.y != ToReal(i.yTarget) {
 			i.yCatchup += itemSpeed*frameDelta - math.Abs(yDelta)
 		}
+		i.y = ToReal(i.yTarget)
 	} else {
 		if yDelta > 0 {
 			i.y += itemSpeed*frameDelta + i.yCatchup
