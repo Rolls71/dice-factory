@@ -135,8 +135,8 @@ func NewGame() *Game {
 	game.SpawnObject(Collector, 6, 7, East)
 
 	//initialise items
-	game.NewItem(PlainD6, "d6_6.png")
-	game.NewItem(GoldD6, "gold_d6_6.png")
+	game.NewItem(PlainD6, "d6.png")
+	game.NewItem(GoldD6, "gold_d6.png")
 
 	game.SpawnItem(PlainD6, builder1)
 	game.SpawnItem(PlainD6, builder2)

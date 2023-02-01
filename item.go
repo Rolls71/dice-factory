@@ -1,6 +1,7 @@
 package main
 
 import (
+	"image"
 	_ "image/png"
 	"log"
 	"math"
@@ -27,6 +28,7 @@ const (
 type Item struct {
 	itemType           ItemType
 	image              *ebiten.Image
+	face               int // value shown on face
 	x, y               float64
 	id                 uint64  // unique generated identifier
 	xTarget, yTarget   int     // index of target object
@@ -50,12 +52,16 @@ func (i *Item) SetID(id uint64) {
 func (i *Item) Value() uint64 {
 	switch i.itemType {
 	case PlainD6:
-		return uint64(rand.Intn(d6Max) + d6Min)
+		return uint64(i.face)
 	case GoldD6:
-		return uint64(rand.Intn(d6Max)+d6Min) * goldMultiplier
+		return uint64(i.face) * goldMultiplier
 	}
 	log.Fatal("Error: unknown itemType")
 	return 0
+}
+
+func (i *Item) Roll() {
+	i.face = rand.Intn(d6Max) + d6Min
 }
 
 // Step moves an item conveyorSpeed units per second towards target
@@ -135,6 +141,7 @@ func (g *Game) SpawnItem(itemType ItemType, creator *Object) *Item {
 	item.SetID(g.NextID())
 	item.SetRealCoordinate(ToReal(x), ToReal(y))
 	item.SetTargetPosition(x, y)
+	item.Roll()
 
 	g.items[item.id] = &item
 	return &item
@@ -171,7 +178,16 @@ func (g *Game) DrawItems(screen *ebiten.Image) {
 	for _, copy := range itemArray {
 		options := &ebiten.DrawImageOptions{}
 		options.GeoM.Translate(float64(copy.x), float64(copy.y))
-		screen.DrawImage(copy.image, options)
+
+		if copy.face == 0 {
+			log.Fatal("Error: Item has no set face")
+		}
+		itemIndex := (copy.face - 1) * tileSize
+		screen.DrawImage(copy.image.SubImage(image.Rect(
+			itemIndex,
+			0,
+			itemIndex+tileSize,
+			tileSize)).(*ebiten.Image), options)
 	}
 
 }
