@@ -15,6 +15,8 @@ const (
 
 type ObjectType int
 
+const conveyorSpeed float64 = 32 // pixels per second
+
 const (
 	PlainObject  ObjectType = iota
 	ConveyorBelt            // Moves items onto facing neighbor.

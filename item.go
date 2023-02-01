@@ -24,8 +24,6 @@ const (
 	goldMultiplier uint64 = 2
 )
 
-const itemSpeed float64 = 32 // pixels per second
-
 type Item struct {
 	itemType           ItemType
 	image              *ebiten.Image
@@ -60,34 +58,35 @@ func (i *Item) Value() uint64 {
 	return 0
 }
 
-// Step moves an item itemSpeed units per second towards target
+// Step moves an item conveyorSpeed units per second towards target
+// Stores catchup when theres movement left, adds on next movement
 func (i *Item) Step() {
 	xDelta := ToReal(i.xTarget) - i.x
-	if math.Abs(xDelta) < itemSpeed*frameDelta {
+	if math.Abs(xDelta) < conveyorSpeed*frameDelta {
 		if i.x != ToReal(i.xTarget) {
-			i.xCatchup += itemSpeed*frameDelta - math.Abs(xDelta)
+			i.xCatchup += conveyorSpeed*frameDelta - math.Abs(xDelta)
 		}
 		i.x = ToReal(i.xTarget)
 	} else {
 		if xDelta > 0 {
-			i.x += itemSpeed*frameDelta + i.xCatchup
+			i.x += conveyorSpeed*frameDelta + i.xCatchup
 		} else {
-			i.x -= itemSpeed*frameDelta + i.xCatchup
+			i.x -= conveyorSpeed*frameDelta + i.xCatchup
 		}
 		i.xCatchup = 0
 	}
 
 	yDelta := ToReal(i.yTarget) - i.y
-	if math.Abs(yDelta) < itemSpeed*frameDelta {
+	if math.Abs(yDelta) < conveyorSpeed*frameDelta {
 		if i.y != ToReal(i.yTarget) {
-			i.yCatchup += itemSpeed*frameDelta - math.Abs(yDelta)
+			i.yCatchup += conveyorSpeed*frameDelta - math.Abs(yDelta)
 		}
 		i.y = ToReal(i.yTarget)
 	} else {
 		if yDelta > 0 {
-			i.y += itemSpeed*frameDelta + i.yCatchup
+			i.y += conveyorSpeed*frameDelta + i.yCatchup
 		} else {
-			i.y -= itemSpeed*frameDelta + i.yCatchup
+			i.y -= conveyorSpeed*frameDelta + i.yCatchup
 		}
 		i.yCatchup = 0
 	}
