@@ -9,8 +9,8 @@ import (
 )
 
 type Tile struct {
-	name  string
-	image *ebiten.Image
+	Name  string
+	Image *ebiten.Image
 }
 
 // NewTile adds a new type of Tiles to the game's tileSet.
@@ -24,8 +24,8 @@ func (g *Game) NewTile(
 		log.Fatal(err)
 	}
 	g.tileSet = append(g.tileSet, Tile{
-		name:  name,
-		image: img,
+		Name:  name,
+		Image: img,
 	})
 }
 
@@ -35,7 +35,7 @@ func (g *Game) NewTile(
 // Tile IDs correspond to TileSet element indices
 // e.g. 0 -> the first NewTile(), 1 -> the second NewTile() ...
 func (g *Game) SetTileStage(tileArray [stageSizeY][stageSizeX]int) {
-	g.tileStage = tileArray
+	g.TileStage = tileArray
 }
 
 // DrawTiles will draw every Tile in the game's list of objects.
@@ -45,7 +45,7 @@ func (g *Game) DrawTiles(screen *ebiten.Image) {
 		for x := 0; x < stageSizeX; x++ {
 			options := &ebiten.DrawImageOptions{}
 			options.GeoM.Translate(float64(x*tileSize), float64(y*tileSize))
-			screen.DrawImage(g.tileSet[g.tileStage[y][x]].image, options)
+			screen.DrawImage(g.tileSet[g.TileStage[y][x]].Image, options)
 		}
 	}
 

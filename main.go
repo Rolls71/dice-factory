@@ -1,9 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	_ "image/png"
+	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -28,6 +31,10 @@ const (
 	stageSizeY int = screenHeight / tileSize
 )
 
+const (
+	saveFilename string = "save.json"
+)
+
 // ToReal converts a tile coordinate to a real coordinate
 func ToReal(i int) float64 {
 	return float64(i * tileSize)
@@ -39,14 +46,15 @@ func ToTile(f float64) int {
 }
 
 // Game stores all data relevant to the running game
+// TODO: Reorganise tileSet to store only images
 type Game struct {
-	tileSet   []Tile                      // Stores different types of Tiles.
-	tileStage [stageSizeY][stageSizeX]int // Stores Tile instances to be drawn.
-	objectSet map[ObjectType]*Object      // Stores different types of Objects.
-	objects   map[uint64]*Object          // Stores Object instances to be drawn.
-	itemSet   map[ItemType]*Item          // Stores different types of Items.
-	items     map[uint64]*Item            // Stores Item instances to be drawn.
-	data      Data
+	tileSet      []Tile                       // Stores different types of Tiles.
+	TileStage    [stageSizeY][stageSizeX]int  // Stores Tile instances to be drawn.
+	objectImages map[ObjectType]*ebiten.Image // Stores different object images.
+	Objects      map[uint64]*Object           // Stores Object instances to be drawn.
+	itemImages   map[ItemType]*ebiten.Image   // Stores different item images.
+	Items        map[uint64]*Item             // Stores Item instances to be drawn.
+	Balance      Currency                     // Stores currency data
 
 	time       uint64 // Stores current tick
 	id         uint64 // Stores id of last item/object made.
@@ -60,21 +68,36 @@ func (g *Game) NextID() uint64 {
 	return g.id
 }
 
+func (g *Game) InitImages() {
+	// initialise tiles
+	g.NewTile("basic_grass", "basic_grass.png") // ID = 0
+	g.NewTile("long_grass", "long_grass.png")   // ID = 1
+
+	// initialise objects
+	g.NewObject(PlainObject, "plain_object.png")
+	g.NewObject(ConveyorBelt, "conveyor_belt.png")
+	g.NewObject(Builder, "plain_object.png")
+	g.NewObject(Collector, "plain_object.png")
+	g.NewObject(Upgrader, "plain_object.png")
+
+	//initialise items
+	g.NewItem(PlainD6, "d6.png")
+	g.NewItem(GoldD6, "gold_d6.png")
+}
+
 // NewGame constructs and returns a Game struct.
 func NewGame() *Game {
-	game := Game{
-		tileSet:   []Tile{},
-		tileStage: [stageSizeY][stageSizeX]int{},
-		objectSet: map[ObjectType]*Object{},
-		objects:   map[uint64]*Object{},
-		itemSet:   map[ItemType]*Item{},
-		items:     map[uint64]*Item{},
-		data:      Data{},
-	}
 
-	// initialise tiles
-	game.NewTile("basic_grass", "basic_grass.png") // ID = 0
-	game.NewTile("long_grass", "long_grass.png")   // ID = 1
+	game := Game{
+		tileSet:      []Tile{},
+		objectImages: map[ObjectType]*ebiten.Image{},
+		itemImages:   map[ItemType]*ebiten.Image{},
+
+		TileStage: [stageSizeY][stageSizeX]int{},
+		Objects:   map[uint64]*Object{},
+		Items:     map[uint64]*Item{},
+		Balance:   Currency{},
+	}
 
 	// set up tile stage
 	game.SetTileStage([stageSizeY][stageSizeX]int{
@@ -95,12 +118,7 @@ func NewGame() *Game {
 		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	})
 
-	// initialise objects
-	game.NewObject(PlainObject, "plain_object.png")
-	game.NewObject(ConveyorBelt, "conveyor_belt.png")
-	game.NewObject(Builder, "plain_object.png")
-	game.NewObject(Collector, "plain_object.png")
-	game.NewObject(Upgrader, "plain_object.png")
+	game.InitImages()
 
 	// builders
 	builder1 := game.SpawnObject(Builder, 2, 2, South)
@@ -134,13 +152,38 @@ func NewGame() *Game {
 	game.SpawnObject(ConveyorBelt, 5, 7, East)
 	game.SpawnObject(Collector, 6, 7, East)
 
-	//initialise items
-	game.NewItem(PlainD6, "d6.png")
-	game.NewItem(GoldD6, "gold_d6.png")
-
 	game.SpawnItem(PlainD6, builder1)
 	game.SpawnItem(PlainD6, builder2)
 	game.SpawnItem(PlainD6, builder3)
+
+	return &game
+}
+
+func (g *Game) SaveGame() {
+	bytes, err := json.Marshal(g)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = ioutil.WriteFile("data.json", bytes, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func LoadGame(filePath string) *Game {
+	f, err := os.ReadFile(filePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var game Game
+	json.Unmarshal(f, &game)
+
+	game.tileSet = []Tile{}
+	game.objectImages = map[ObjectType]*ebiten.Image{}
+	game.itemImages = map[ItemType]*ebiten.Image{}
+	game.InitImages()
 
 	return &game
 }
@@ -160,7 +203,7 @@ func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.Key1) {
 		isObject, object := g.GetObjectAt(x, y)
 		if isObject {
-			delete(g.objects, object.id)
+			delete(g.Objects, object.ID)
 		} else {
 			g.SpawnObject(ConveyorBelt, x, y, South)
 		}
@@ -168,16 +211,16 @@ func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.Key2) {
 		isObject, object := g.GetObjectAt(x, y)
 		if isObject {
-			delete(g.objects, object.id)
+			delete(g.Objects, object.ID)
 		} else {
 			g.SpawnObject(Builder, x, y, South)
 		}
 	}
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonMiddle) {
 		fmt.Printf("objects: ")
-		fmt.Println(g.objects)
+		fmt.Println(g.Objects)
 		fmt.Print("items: ")
-		fmt.Println(*g.items[1])
+		fmt.Println(*g.Items[1])
 	}
 
 	g.UpdateInput()
@@ -202,7 +245,21 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (
 func main() {
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Dice Factory")
-	if err := ebiten.RunGame(NewGame()); err != nil {
+
+	var game *Game
+	if _, err := os.Stat(saveFilename); err != nil {
+		if os.IsNotExist(err) {
+			// file does not exist
+			game = NewGame()
+		} else {
+			// other error
+			log.Fatal(err)
+		}
+	} else {
+		game = LoadGame("data.json")
+	}
+	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
 	}
+	game.SaveGame()
 }

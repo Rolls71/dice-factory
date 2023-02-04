@@ -35,31 +35,30 @@ const (
 )
 
 type Object struct {
-	objectType ObjectType
-	image      *ebiten.Image
-	x          int // tile coord
-	y          int // tile coord
+	ObjectType ObjectType
+	X          int // tile coord
+	Y          int // tile coord
 
-	id        uint64       // unique generated identifier
-	facing    ObjectFacing // default South
-	isDragged bool         // default false
+	ID        uint64       // unique generated identifier
+	Facing    ObjectFacing // default South
+	IsDragged bool         // default false
 }
 
 func (o *Object) SetID(id uint64) {
-	o.id = id
+	o.ID = id
 }
 
 func (o *Object) SetPosition(x, y int) {
-	o.x = x
-	o.y = y
+	o.X = x
+	o.Y = y
 }
 
 func (o *Object) SetFacing(dir ObjectFacing) {
-	o.facing = dir
+	o.Facing = dir
 }
 
 func (o *Object) Rotate() {
-	o.facing = (o.facing + 1) % 4
+	o.Facing = (o.Facing + 1) % 4
 }
 
 // IsItemOn tests if there is an item targeting the belt, and if it's currently
@@ -73,8 +72,8 @@ func (g *Game) IsItemOn(object *Object) (bool, *Item) {
 	}
 
 	// is the item currently on the belt?
-	if item.x != ToReal(object.x) ||
-		item.y != ToReal(object.y) {
+	if item.X != ToReal(object.X) ||
+		item.Y != ToReal(object.Y) {
 		return false, item
 	}
 
@@ -114,15 +113,15 @@ func (g *Game) MoveItemOn(object *Object) {
 	}
 
 	// set the item to target that object
-	item.SetTargetPosition(neighbor.x, neighbor.y)
+	item.SetTargetPosition(neighbor.X, neighbor.Y)
 }
 
 // UpdateObjects will iterate through each Object and switch,
 // depending on their type. Each Object type may have different functionality
 func (g *Game) UpdateObjects() {
-	for _, copy := range g.objects {
-		object := g.objects[copy.id]
-		switch object.objectType {
+	for _, copy := range g.Objects {
+		object := g.Objects[copy.ID]
+		switch object.ObjectType {
 		case ConveyorBelt:
 			g.MoveItemOn(object)
 		case Builder:
@@ -136,8 +135,8 @@ func (g *Game) UpdateObjects() {
 		case Collector:
 			isItemOn, item := g.IsItemOn(object)
 			if isItemOn {
-				g.data.AddDie(item.Value())
-				delete(g.items, item.id)
+				g.Balance.AddDie(item.Value())
+				delete(g.Items, item.ID)
 			}
 		case Upgrader:
 			isItemOn, item := g.IsItemOn(object)
@@ -153,24 +152,24 @@ func (g *Game) UpdateObjects() {
 // If there is an object, it returns true, and a reference to the Object
 // If there is no object, it returns false, and an empty Object
 func (g *Game) GetNeighborOf(o *Object) (bool, *Object) {
-	switch o.facing {
+	switch o.Facing {
 	case South:
-		isObject, object := g.GetObjectAt(o.x, o.y+1)
+		isObject, object := g.GetObjectAt(o.X, o.Y+1)
 		if isObject {
 			return true, object
 		}
 	case West:
-		isObject, object := g.GetObjectAt(o.x-1, o.y)
+		isObject, object := g.GetObjectAt(o.X-1, o.Y)
 		if isObject {
 			return true, object
 		}
 	case North:
-		isObject, object := g.GetObjectAt(o.x, o.y-1)
+		isObject, object := g.GetObjectAt(o.X, o.Y-1)
 		if isObject {
 			return true, object
 		}
 	case East:
-		isObject, object := g.GetObjectAt(o.x+1, o.y)
+		isObject, object := g.GetObjectAt(o.X+1, o.Y)
 		if isObject {
 			return true, object
 		}
@@ -181,10 +180,10 @@ func (g *Game) GetNeighborOf(o *Object) (bool, *Object) {
 // GetObjectAt returns true if there is an Object at the given coordinates
 // An array of every Object at that coordinate is also returned.
 func (g *Game) GetObjectAt(x, y int) (bool, *Object) {
-	for _, copy := range g.objects {
-		if copy.x == x &&
-			copy.y == y {
-			return true, g.objects[copy.id]
+	for _, copy := range g.Objects {
+		if copy.X == x &&
+			copy.Y == y {
+			return true, g.Objects[copy.ID]
 		}
 	}
 	return false, &Object{}
@@ -198,10 +197,7 @@ func (g *Game) NewObject(objectType ObjectType, imageName string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	g.objectSet[objectType] = &Object{
-		objectType: objectType,
-		image:      img,
-	}
+	g.objectImages[objectType] = img
 }
 
 // SpawnObject constructs a new object of ObjectType
@@ -210,12 +206,14 @@ func (g *Game) SpawnObject(
 	x, y int,
 	facing ObjectFacing,
 ) *Object {
-	object := *g.objectSet[objectType]
+	object := Object{
+		ObjectType: objectType,
+	}
 	object.SetID(g.NextID())
 	object.SetPosition(x, y)
 	object.SetFacing(facing)
 
-	g.objects[object.id] = &object
+	g.Objects[object.ID] = &object
 	return &object
 }
 
@@ -225,10 +223,10 @@ func (g *Game) SpawnObject(
 func (g *Game) DrawObjects(screen *ebiten.Image) {
 	var onTop *ebiten.Image
 	var topOptions *ebiten.DrawImageOptions
-	for _, copy := range g.objects {
+	for _, copy := range g.Objects {
 		options := &ebiten.DrawImageOptions{}
-		options.GeoM.Rotate(math.Pi / 2 * float64(copy.facing))
-		switch copy.facing {
+		options.GeoM.Rotate(math.Pi / 2 * float64(copy.Facing))
+		switch copy.Facing {
 		case West:
 			options.GeoM.Translate(float64(tileSize), 0)
 		case North:
@@ -236,16 +234,16 @@ func (g *Game) DrawObjects(screen *ebiten.Image) {
 		case East:
 			options.GeoM.Translate(0, float64(tileSize))
 		}
-		if copy.isDragged {
+		if copy.IsDragged {
 			x, y := ebiten.CursorPosition()
 			options.GeoM.Translate(float64(x), float64(y))
-			onTop = copy.image
+			onTop = g.objectImages[copy.ObjectType]
 			topOptions = options
 		} else {
 			options.GeoM.Translate(
-				float64(copy.x*tileSize),
-				float64(copy.y*tileSize))
-			screen.DrawImage(copy.image, options)
+				float64(copy.X*tileSize),
+				float64(copy.Y*tileSize))
+			screen.DrawImage(g.objectImages[copy.ObjectType], options)
 		}
 	}
 	if onTop != nil {
