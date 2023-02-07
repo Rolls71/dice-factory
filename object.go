@@ -36,12 +36,12 @@ const (
 
 type Object struct {
 	ObjectType ObjectType
-	X          int // tile coord
-	Y          int // tile coord
+	X          int          // tile coord
+	Y          int          // tile coord
+	ID         uint64       // unique generated identifier
+	Facing     ObjectFacing // default South
 
-	ID        uint64       // unique generated identifier
-	Facing    ObjectFacing // default South
-	IsDragged bool         // default false
+	isDragged bool // default false
 }
 
 func (o *Object) SetID(id uint64) {
@@ -125,7 +125,7 @@ func (g *Game) UpdateObjects() {
 		case ConveyorBelt:
 			g.MoveItemOn(object)
 		case Builder:
-			if g.time%uint64(frameRate*buildCycleSeconds) == 0 {
+			if g.ticks%uint64(frameRate*buildCycleSeconds) == 0 {
 				isItemMoveable, _ := g.IsItemMoveable(object)
 				if isItemMoveable {
 					g.SpawnItem(PlainD6, object)
@@ -135,7 +135,7 @@ func (g *Game) UpdateObjects() {
 		case Collector:
 			isItemOn, item := g.IsItemOn(object)
 			if isItemOn {
-				g.Balance.AddDie(item.Value())
+				g.AddDie(item.Value())
 				delete(g.Items, item.ID)
 			}
 		case Upgrader:
@@ -213,6 +213,7 @@ func (g *Game) SpawnObject(
 	object.SetPosition(x, y)
 	object.SetFacing(facing)
 
+	g.ObjectCount[objectType] += 1
 	g.Objects[object.ID] = &object
 	return &object
 }
@@ -234,7 +235,7 @@ func (g *Game) DrawObjects(screen *ebiten.Image) {
 		case East:
 			options.GeoM.Translate(0, float64(tileSize))
 		}
-		if copy.IsDragged {
+		if copy.isDragged {
 			x, y := ebiten.CursorPosition()
 			options.GeoM.Translate(float64(x), float64(y))
 			onTop = g.objectImages[copy.ObjectType]

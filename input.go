@@ -29,7 +29,7 @@ func (g *Game) onDragStart(mouseButton ebiten.MouseButton) {
 		x, y := g.GetCursorCoordinates()
 		isObject, object := g.GetObjectAt(x, y)
 		if isObject {
-			object.IsDragged = true
+			object.isDragged = true
 			g.isDragging = true
 		}
 	}
@@ -43,8 +43,8 @@ func (g *Game) onDragEnd(mouseButton ebiten.MouseButton) {
 		x, y := g.GetCursorCoordinates()
 		isObject, _ := g.GetObjectAt(x, y)
 		for i, copy := range g.Objects {
-			if copy.IsDragged {
-				g.Objects[i].IsDragged = false
+			if copy.isDragged {
+				g.Objects[i].isDragged = false
 				g.isDragging = false
 				if !isObject {
 					g.Objects[i].SetPosition(x, y)
@@ -61,7 +61,7 @@ func (g *Game) onRotate(key ebiten.Key) {
 	if inpututil.IsKeyJustPressed(key) {
 		if g.isDragging {
 			for index, object := range g.Objects {
-				if object.IsDragged {
+				if object.isDragged {
 					g.Objects[index].Rotate()
 					break
 				}

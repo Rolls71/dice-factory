@@ -49,25 +49,28 @@ func ToTile(f float64) int {
 // TODO: Reorganise tileSet to store only images
 type Game struct {
 	tileSet      []Tile                       // Stores different types of Tiles.
-	TileStage    [stageSizeY][stageSizeX]int  // Stores Tile instances to be drawn.
 	objectImages map[ObjectType]*ebiten.Image // Stores different object images.
-	Objects      map[uint64]*Object           // Stores Object instances to be drawn.
 	itemImages   map[ItemType]*ebiten.Image   // Stores different item images.
-	Items        map[uint64]*Item             // Stores Item instances to be drawn.
-	Balance      Currency                     // Stores currency data
 
-	time       uint64 // Stores current tick
-	id         uint64 // Stores id of last item/object made.
+	TileStage   [stageSizeY][stageSizeX]int // Stores Tile instances to be drawn.
+	Objects     map[uint64]*Object          // Stores Object instances to be drawn.
+	ObjectCount map[ObjectType]uint64       // Tracks the number of Objects
+	Items       map[uint64]*Item            // Stores Item instances to be drawn.
+	Balance     Currency                    // Stores currency data
+	ID          uint64                      // Stores id of last item/object made.
+
+	ticks      uint64 // Stores tick count
 	isDragging bool   // Is an Object being dragged
 
 }
 
 // NextID increments the stored id and returns it
 func (g *Game) NextID() uint64 {
-	g.id += 1
-	return g.id
+	g.ID += 1
+	return g.ID
 }
 
+// InitImages will initialise all images
 func (g *Game) InitImages() {
 	// initialise tiles
 	g.NewTile("basic_grass", "basic_grass.png") // ID = 0
@@ -93,10 +96,11 @@ func NewGame() *Game {
 		objectImages: map[ObjectType]*ebiten.Image{},
 		itemImages:   map[ItemType]*ebiten.Image{},
 
-		TileStage: [stageSizeY][stageSizeX]int{},
-		Objects:   map[uint64]*Object{},
-		Items:     map[uint64]*Item{},
-		Balance:   Currency{},
+		TileStage:   [stageSizeY][stageSizeX]int{},
+		Objects:     map[uint64]*Object{},
+		ObjectCount: map[ObjectType]uint64{},
+		Items:       map[uint64]*Item{},
+		Balance:     Currency{},
 	}
 
 	// set up tile stage
@@ -165,7 +169,7 @@ func (g *Game) SaveGame() {
 		log.Fatal(err)
 	}
 
-	err = ioutil.WriteFile("data.json", bytes, 0644)
+	err = ioutil.WriteFile(saveFilename, bytes, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -188,9 +192,9 @@ func LoadGame(filePath string) *Game {
 	return &game
 }
 
-// Update calls the game's update functions
+// Update calls the game's update functions and iterates the games tick count
 func (g *Game) Update() error {
-	g.time += 1
+	g.ticks += 1
 
 	// Temporary inputs before system is put in place
 	x, y := g.GetCursorCoordinates()
@@ -203,14 +207,16 @@ func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.Key1) {
 		isObject, object := g.GetObjectAt(x, y)
 		if isObject {
+			g.ObjectCount[object.ObjectType] -= 1
 			delete(g.Objects, object.ID)
 		} else {
-			g.SpawnObject(ConveyorBelt, x, y, South)
+			g.Buy(ConveyorBelt, x, y, South)
 		}
 	}
 	if inpututil.IsKeyJustPressed(ebiten.Key2) {
 		isObject, object := g.GetObjectAt(x, y)
 		if isObject {
+			g.ObjectCount[object.ObjectType] -= 1
 			delete(g.Objects, object.ID)
 		} else {
 			g.SpawnObject(Builder, x, y, South)
@@ -256,7 +262,7 @@ func main() {
 			log.Fatal(err)
 		}
 	} else {
-		game = LoadGame("data.json")
+		game = LoadGame(saveFilename)
 	}
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
