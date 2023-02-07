@@ -18,7 +18,7 @@ func (g *Game) Cost(object ObjectType) uint64 {
 	case Upgrader:
 		return uint64(math.Pow(10, float64(g.ObjectCount[object])+1) * 30)
 	}
-	return 0
+	return maxUint64
 }
 
 func (g *Game) AddDie(value uint64) {

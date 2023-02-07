@@ -6,11 +6,19 @@ import (
 )
 
 // GetCursorCoordinates returns the tile coordinate that the cursor is within.
-func (g *Game) GetCursorCoordinates() (int, int) {
+func GetCursorCoordinates() (int, int) {
 	x, y := ebiten.CursorPosition()
 	x /= tileSize
 	y /= tileSize
 	return x, y
+}
+
+// IsInGameArea returns true if the coordinate is within the games boundaries
+func IsInGameArea(x, y int) bool {
+	return (x > 0 &&
+		x < screenWidth &&
+		y > 0 &&
+		y < screenHeight-lowerHUDHeight)
 }
 
 // UpdateInput runs all major input functions.
@@ -26,11 +34,22 @@ func (g *Game) UpdateInput() {
 func (g *Game) onDragStart(mouseButton ebiten.MouseButton) {
 	if inpututil.IsMouseButtonJustPressed(mouseButton) &&
 		!g.isDragging {
-		x, y := g.GetCursorCoordinates()
-		isObject, object := g.GetObjectAt(x, y)
-		if isObject {
-			object.isDragged = true
-			g.isDragging = true
+		x, y := ebiten.CursorPosition()
+		if !IsInGameArea(x, y) {
+			for _, object := range g.UIObjects {
+				if x > object.uiPosition && x < object.uiPosition+tileSize {
+					object.isDragged = true
+					g.isDragging = true
+					return
+				}
+			}
+		} else {
+			xTile, yTile := GetCursorCoordinates()
+			isObject, object := g.GetObjectAt(xTile, yTile)
+			if isObject {
+				object.isDragged = true
+				g.isDragging = true
+			}
 		}
 	}
 }
@@ -40,16 +59,26 @@ func (g *Game) onDragStart(mouseButton ebiten.MouseButton) {
 func (g *Game) onDragEnd(mouseButton ebiten.MouseButton) {
 	if inpututil.IsMouseButtonJustReleased(mouseButton) &&
 		g.isDragging {
-		x, y := g.GetCursorCoordinates()
+		x, y := ebiten.CursorPosition()
 		isObject, _ := g.GetObjectAt(x, y)
-		for i, copy := range g.Objects {
-			if copy.isDragged {
-				g.Objects[i].isDragged = false
+		for _, object := range g.UIObjects {
+			if object.isDragged {
+				object.isDragged = false
 				g.isDragging = false
-				if !isObject {
-					g.Objects[i].SetPosition(x, y)
+				if !isObject && IsInGameArea(x, y) {
+					g.Buy(object.Object, x/tileSize, y/tileSize, South)
 				}
-				break
+				return
+			}
+		}
+		for _, object := range g.Objects {
+			if object.isDragged {
+				object.isDragged = false
+				g.isDragging = false
+				if !isObject && IsInGameArea(x, y) {
+					object.SetPosition(x/tileSize, y/tileSize)
+				}
+				return
 			}
 		}
 	}
@@ -67,7 +96,7 @@ func (g *Game) onRotate(key ebiten.Key) {
 				}
 			}
 		} else {
-			x, y := g.GetCursorCoordinates()
+			x, y := GetCursorCoordinates()
 			isObject, object := g.GetObjectAt(x, y)
 			if isObject {
 				object.Rotate()

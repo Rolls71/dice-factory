@@ -26,7 +26,7 @@ const (
 )
 
 type Item struct {
-	ItemType           ItemType
+	Item               ItemType
 	Face               int // value shown on face
 	X, Y               float64
 	ID                 uint64  // unique generated identifier
@@ -49,7 +49,7 @@ func (i *Item) SetID(id uint64) {
 }
 
 func (i *Item) Value() uint64 {
-	switch i.ItemType {
+	switch i.Item {
 	case PlainD6:
 		return uint64(i.Face)
 	case GoldD6:
@@ -106,7 +106,7 @@ func (g *Game) UpdateItems() {
 			delete(g.Items, copy.ID)
 			continue
 		}
-		switch copy.ItemType {
+		switch copy.Item {
 		case PlainD6:
 		}
 		// has item reached target position?
@@ -144,7 +144,7 @@ func (g *Game) SpawnItem(itemType ItemType, creator *Object) *Item {
 }
 
 func (g *Game) SetItem(item *Item, itemType ItemType) {
-	item.ItemType = itemType
+	item.Item = itemType
 }
 
 // GetItemTargeting will find an Item targeting a given Object.
@@ -178,7 +178,7 @@ func (g *Game) DrawItems(screen *ebiten.Image) {
 			log.Fatal("Error: Item has no set face")
 		}
 		itemIndex := (copy.Face - 1) * tileSize
-		screen.DrawImage(g.itemImages[copy.ItemType].SubImage(image.Rect(
+		screen.DrawImage(g.itemImages[copy.Item].SubImage(image.Rect(
 			itemIndex,
 			0,
 			itemIndex+tileSize,

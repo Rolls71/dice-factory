@@ -35,13 +35,14 @@ const (
 )
 
 type Object struct {
-	ObjectType ObjectType
-	X          int          // tile coord
-	Y          int          // tile coord
-	ID         uint64       // unique generated identifier
-	Facing     ObjectFacing // default South
+	Object ObjectType
+	X      int          // tile coord
+	Y      int          // tile coord
+	ID     uint64       // unique generated identifier
+	Facing ObjectFacing // default South
 
-	isDragged bool // default false
+	uiPosition int  // stores position of ui objects
+	isDragged  bool // default false
 }
 
 func (o *Object) SetID(id uint64) {
@@ -121,7 +122,7 @@ func (g *Game) MoveItemOn(object *Object) {
 func (g *Game) UpdateObjects() {
 	for _, copy := range g.Objects {
 		object := g.Objects[copy.ID]
-		switch object.ObjectType {
+		switch object.Object {
 		case ConveyorBelt:
 			g.MoveItemOn(object)
 		case Builder:
@@ -207,7 +208,7 @@ func (g *Game) SpawnObject(
 	facing ObjectFacing,
 ) *Object {
 	object := Object{
-		ObjectType: objectType,
+		Object: objectType,
 	}
 	object.SetID(g.NextID())
 	object.SetPosition(x, y)
@@ -221,13 +222,13 @@ func (g *Game) SpawnObject(
 // DrawObjects will draw every Tile in the game's list of objects.
 // Objects are drawn on their stored grid coordinate.
 // An Object flagged with trackMouse will be drawn attached to cursor instead.
-func (g *Game) DrawObjects(screen *ebiten.Image) {
+func (g Game) DrawObjects(screen *ebiten.Image) {
 	var onTop *ebiten.Image
 	var topOptions *ebiten.DrawImageOptions
-	for _, copy := range g.Objects {
+	for _, object := range g.Objects {
 		options := &ebiten.DrawImageOptions{}
-		options.GeoM.Rotate(math.Pi / 2 * float64(copy.Facing))
-		switch copy.Facing {
+		options.GeoM.Rotate(math.Pi / 2 * float64(object.Facing))
+		switch object.Facing {
 		case West:
 			options.GeoM.Translate(float64(tileSize), 0)
 		case North:
@@ -235,16 +236,16 @@ func (g *Game) DrawObjects(screen *ebiten.Image) {
 		case East:
 			options.GeoM.Translate(0, float64(tileSize))
 		}
-		if copy.isDragged {
+		if object.isDragged {
 			x, y := ebiten.CursorPosition()
 			options.GeoM.Translate(float64(x), float64(y))
-			onTop = g.objectImages[copy.ObjectType]
+			onTop = g.objectImages[object.Object]
 			topOptions = options
 		} else {
 			options.GeoM.Translate(
-				float64(copy.X*tileSize),
-				float64(copy.Y*tileSize))
-			screen.DrawImage(g.objectImages[copy.ObjectType], options)
+				float64(object.X*tileSize),
+				float64(object.Y*tileSize))
+			screen.DrawImage(g.objectImages[object.Object], options)
 		}
 	}
 	if onTop != nil {

@@ -17,9 +17,7 @@ const (
 	screenHeight int = 640 // 480
 )
 
-const (
-	tileSize int = 32
-)
+const tileSize int = 32
 
 const (
 	frameRate  int     = 60
@@ -31,9 +29,9 @@ const (
 	stageSizeY int = screenHeight / tileSize
 )
 
-const (
-	saveFilename string = "save.json"
-)
+const saveFilename string = "save.json"
+
+const maxUint64 = ^uint64(0)
 
 // ToReal converts a tile coordinate to a real coordinate
 func ToReal(i int) float64 {
@@ -54,6 +52,7 @@ type Game struct {
 
 	TileStage   [stageSizeY][stageSizeX]int // Stores Tile instances to be drawn.
 	Objects     map[uint64]*Object          // Stores Object instances to be drawn.
+	UIObjects   []*Object                   // Stores Objects in the UI Overlay
 	ObjectCount map[ObjectType]uint64       // Tracks the number of Objects
 	Items       map[uint64]*Item            // Stores Item instances to be drawn.
 	Balance     Currency                    // Stores currency data
@@ -70,8 +69,8 @@ func (g *Game) NextID() uint64 {
 	return g.ID
 }
 
-// InitImages will initialise all images
-func (g *Game) InitImages() {
+// Init will initialise all images
+func (g *Game) Init() {
 	// initialise tiles
 	g.NewTile(BasicGrass, "basic_grass.png")
 	g.NewTile(LongGrass, "long_grass.png")
@@ -98,6 +97,7 @@ func NewGame() *Game {
 
 		TileStage:   [stageSizeY][stageSizeX]int{},
 		Objects:     map[uint64]*Object{},
+		UIObjects:   []*Object{},
 		ObjectCount: map[ObjectType]uint64{},
 		Items:       map[uint64]*Item{},
 		Balance:     Currency{},
@@ -122,7 +122,8 @@ func NewGame() *Game {
 		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	})
 
-	game.InitImages()
+	game.Init()
+	game.InitHUD()
 
 	// builders
 	builder1 := game.SpawnObject(Builder, 2, 2, South)
@@ -187,7 +188,7 @@ func LoadGame(filePath string) *Game {
 	game.tileImages = map[TileType]*ebiten.Image{}
 	game.objectImages = map[ObjectType]*ebiten.Image{}
 	game.itemImages = map[ItemType]*ebiten.Image{}
-	game.InitImages()
+	game.Init()
 
 	return &game
 }
@@ -197,7 +198,7 @@ func (g *Game) Update() error {
 	g.ticks += 1
 
 	// Temporary inputs before system is put in place
-	x, y := g.GetCursorCoordinates()
+	x, y := GetCursorCoordinates()
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
 		isObject, object := g.GetObjectAt(x, y)
 		if isObject {
@@ -207,7 +208,7 @@ func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.Key1) {
 		isObject, object := g.GetObjectAt(x, y)
 		if isObject {
-			g.ObjectCount[object.ObjectType] -= 1
+			g.ObjectCount[object.Object] -= 1
 			delete(g.Objects, object.ID)
 		} else {
 			g.Buy(ConveyorBelt, x, y, South)
@@ -216,7 +217,7 @@ func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.Key2) {
 		isObject, object := g.GetObjectAt(x, y)
 		if isObject {
-			g.ObjectCount[object.ObjectType] -= 1
+			g.ObjectCount[object.Object] -= 1
 			delete(g.Objects, object.ID)
 		} else {
 			g.SpawnObject(Builder, x, y, South)
