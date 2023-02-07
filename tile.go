@@ -8,6 +8,13 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
+type TileType int
+
+const (
+	BasicGrass = iota
+	LongGrass
+)
+
 type Tile struct {
 	Name  string
 	Image *ebiten.Image
@@ -15,7 +22,7 @@ type Tile struct {
 
 // NewTile adds a new type of Tiles to the game's tileSet.
 func (g *Game) NewTile(
-	name,
+	tile TileType,
 	imageName string,
 ) {
 	path := "images/" + imageName
@@ -23,17 +30,12 @@ func (g *Game) NewTile(
 	if err != nil {
 		log.Fatal(err)
 	}
-	g.tileSet = append(g.tileSet, Tile{
-		Name:  name,
-		Image: img,
-	})
+	g.tileImages[tile] = img
 }
 
 // SetTileStage sets the value of every Tile on-screen
-// Requires a 2D array of Tile ID integers
+// Requires a 2D array of ints to fit TileType
 // Given array must be of type [stageSizeY][stageSizeX]int
-// Tile IDs correspond to TileSet element indices
-// e.g. 0 -> the first NewTile(), 1 -> the second NewTile() ...
 func (g *Game) SetTileStage(tileArray [stageSizeY][stageSizeX]int) {
 	g.TileStage = tileArray
 }
@@ -45,7 +47,7 @@ func (g *Game) DrawTiles(screen *ebiten.Image) {
 		for x := 0; x < stageSizeX; x++ {
 			options := &ebiten.DrawImageOptions{}
 			options.GeoM.Translate(float64(x*tileSize), float64(y*tileSize))
-			screen.DrawImage(g.tileSet[g.TileStage[y][x]].Image, options)
+			screen.DrawImage(g.tileImages[TileType(g.TileStage[y][x])], options)
 		}
 	}
 

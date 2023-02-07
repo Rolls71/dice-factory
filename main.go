@@ -48,7 +48,7 @@ func ToTile(f float64) int {
 // Game stores all data relevant to the running game
 // TODO: Reorganise tileSet to store only images
 type Game struct {
-	tileSet      []Tile                       // Stores different types of Tiles.
+	tileImages   map[TileType]*ebiten.Image   // Stores different types of Tiles.
 	objectImages map[ObjectType]*ebiten.Image // Stores different object images.
 	itemImages   map[ItemType]*ebiten.Image   // Stores different item images.
 
@@ -73,8 +73,8 @@ func (g *Game) NextID() uint64 {
 // InitImages will initialise all images
 func (g *Game) InitImages() {
 	// initialise tiles
-	g.NewTile("basic_grass", "basic_grass.png") // ID = 0
-	g.NewTile("long_grass", "long_grass.png")   // ID = 1
+	g.NewTile(BasicGrass, "basic_grass.png")
+	g.NewTile(LongGrass, "long_grass.png")
 
 	// initialise objects
 	g.NewObject(PlainObject, "plain_object.png")
@@ -92,7 +92,7 @@ func (g *Game) InitImages() {
 func NewGame() *Game {
 
 	game := Game{
-		tileSet:      []Tile{},
+		tileImages:   map[TileType]*ebiten.Image{},
 		objectImages: map[ObjectType]*ebiten.Image{},
 		itemImages:   map[ItemType]*ebiten.Image{},
 
@@ -184,7 +184,7 @@ func LoadGame(filePath string) *Game {
 	var game Game
 	json.Unmarshal(f, &game)
 
-	game.tileSet = []Tile{}
+	game.tileImages = map[TileType]*ebiten.Image{}
 	game.objectImages = map[ObjectType]*ebiten.Image{}
 	game.itemImages = map[ItemType]*ebiten.Image{}
 	game.InitImages()
