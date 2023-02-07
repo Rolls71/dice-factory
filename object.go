@@ -140,10 +140,10 @@ func (g *Game) UpdateObjects() {
 			}
 		case Upgrader:
 			isItemOn, item := g.IsItemOn(object)
-			if isItemOn {
+			if isItemOn && g.ticks%uint64(frameRate*buildCycleSeconds) == 0 {
 				g.SetItem(item, GoldD6)
+				g.MoveItemOn(object)
 			}
-			g.MoveItemOn(object)
 		}
 	}
 }
