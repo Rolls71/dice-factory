@@ -125,6 +125,11 @@ func NewGame() *Game {
 	game.InitImages()
 	game.InitHUD()
 
+	game.SpawnObject(Builder, 5, 5, South)
+	game.SpawnObject(Builder, 5, 6, South)
+	game.SpawnObject(Collector, 5, 7, South)
+
+	/* TEST OBJECTS
 	// builders
 	builder1 := game.SpawnObject(Builder, 2, 2, South)
 	builder2 := game.SpawnObject(Builder, 4, 2, South)
@@ -159,7 +164,7 @@ func NewGame() *Game {
 
 	game.SpawnItem(PlainD6, builder1)
 	game.SpawnItem(PlainD6, builder2)
-	game.SpawnItem(PlainD6, builder3)
+	game.SpawnItem(PlainD6, builder3)*/
 
 	return &game
 }

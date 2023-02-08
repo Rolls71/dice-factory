@@ -16,15 +16,21 @@ const (
 
 var darkGrey color.RGBA = color.RGBA{0x55, 0x55, 0x55, 0xff}
 
+// UnlockObject attempts to add an object to a hotbar if it has a specific count
+func (g *Game) UnlockObject(objectType ObjectType) {
+	switch objectType {
+	case Builder:
+		if g.ObjectCount[objectType] >= 3 {
+			g.SpawnUIObject(Upgrader)
+		}
+	}
+}
+
 // InitHUD adds UIObjects to hotbar.
 // Run InitHUD after objectImages are initialised
 func (g *Game) InitHUD() {
-	for i := 0; i < len(g.objectImages); i++ {
-		if i == int(Collector) {
-			continue
-		}
-		g.SpawnUIObject(ObjectType(i))
-	}
+	g.SpawnUIObject(ConveyorBelt)
+	g.SpawnUIObject(Builder)
 }
 
 // SpawnUIObject constructs a new object of ObjectType in the UI overlay

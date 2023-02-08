@@ -97,7 +97,12 @@ func (g *Game) IsItemMoveable(object *Object) (bool, *Object) {
 		return false, neighbor
 	}
 
-	return true, neighbor
+	if object.Object == ConveyorBelt ||
+		neighbor.Object == ConveyorBelt {
+		return true, neighbor
+	}
+
+	return false, neighbor
 }
 
 // MoveItemOn tests IsItemOn and IsItemMoveable before setting an item's
@@ -215,6 +220,8 @@ func (g *Game) SpawnObject(
 	object.SetFacing(facing)
 
 	g.ObjectCount[objectType] += 1
+	g.UnlockObject(objectType)
+
 	g.Objects[object.ID] = &object
 	return &object
 }
