@@ -69,8 +69,8 @@ func (g *Game) NextID() uint64 {
 	return g.ID
 }
 
-// Init will initialise all images
-func (g *Game) Init() {
+// InitImages will initialise all images
+func (g *Game) InitImages() {
 	// initialise tiles
 	g.NewTile(BasicGrass, "basic_grass.png")
 	g.NewTile(LongGrass, "long_grass.png")
@@ -122,7 +122,7 @@ func NewGame() *Game {
 		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	})
 
-	game.Init()
+	game.InitImages()
 	game.InitHUD()
 
 	// builders
@@ -164,6 +164,7 @@ func NewGame() *Game {
 	return &game
 }
 
+// SaveGame stores the game struct in a JSON file
 func (g *Game) SaveGame() {
 	bytes, err := json.Marshal(g)
 	if err != nil {
@@ -176,6 +177,8 @@ func (g *Game) SaveGame() {
 	}
 }
 
+// LoadGame returns the game struct stored in given JSON file.
+// Images are reinitialised
 func LoadGame(filePath string) *Game {
 	f, err := os.ReadFile(filePath)
 	if err != nil {
@@ -188,7 +191,7 @@ func LoadGame(filePath string) *Game {
 	game.tileImages = map[TileType]*ebiten.Image{}
 	game.objectImages = map[ObjectType]*ebiten.Image{}
 	game.itemImages = map[ItemType]*ebiten.Image{}
-	game.Init()
+	game.InitImages()
 
 	return &game
 }

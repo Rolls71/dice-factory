@@ -30,6 +30,7 @@ func (g *Game) SpawnUIObject(
 	g.UIObjects = append(g.UIObjects, &Object{Object: object})
 }
 
+// DrawHUD calls HUD-related draw functions
 func (g *Game) DrawHUD(screen *ebiten.Image) {
 	g.DrawUIObjects(screen)
 
@@ -40,6 +41,7 @@ func (g *Game) DrawHUD(screen *ebiten.Image) {
 	ebitenutil.DebugPrint(screen, string)
 }
 
+// DrawUIObjects draws objects in the UIObjects array
 func (g Game) DrawUIObjects(screen *ebiten.Image) {
 	var onTop *ebiten.Image
 	var topOptions *ebiten.DrawImageOptions
