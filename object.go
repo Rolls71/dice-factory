@@ -233,7 +233,10 @@ func (g Game) DrawObjects(screen *ebiten.Image) {
 	var onTop *ebiten.Image
 	var topOptions *ebiten.DrawImageOptions
 	for _, object := range g.Objects {
+		img := g.objectImages[object.Object]
 		options := &ebiten.DrawImageOptions{}
+		options.GeoM.Scale(float64(tileSize)/float64(img.Bounds().Dx()),
+			float64(tileSize)/float64(img.Bounds().Dy()))
 		options.GeoM.Rotate(math.Pi / 2 * float64(object.Facing))
 		switch object.Facing {
 		case West:
@@ -246,13 +249,13 @@ func (g Game) DrawObjects(screen *ebiten.Image) {
 		if object.isDragged {
 			x, y := ebiten.CursorPosition()
 			options.GeoM.Translate(float64(x), float64(y))
-			onTop = g.objectImages[object.Object]
+			onTop = img
 			topOptions = options
 		} else {
 			options.GeoM.Translate(
 				float64(object.X*tileSize),
 				float64(object.Y*tileSize))
-			screen.DrawImage(g.objectImages[object.Object], options)
+			screen.DrawImage(img, options)
 		}
 	}
 	if onTop != nil {

@@ -162,27 +162,31 @@ func (g *Game) GetItemTargeting(object *Object) (bool, *Item) {
 // DrawItems draws each Item at a pixel coordinate
 func (g *Game) DrawItems(screen *ebiten.Image) {
 	itemArray := []*Item{}
-	for _, copy := range g.Items {
-		itemArray = append(itemArray, copy)
+	for _, item := range g.Items {
+		itemArray = append(itemArray, item)
 	}
 
 	sort.SliceStable(itemArray, func(i, j int) bool {
 		return itemArray[i].ID < itemArray[j].ID
 	})
 
-	for _, copy := range itemArray {
+	for _, item := range itemArray {
+		img := g.itemImages[item.Item]
 		options := &ebiten.DrawImageOptions{}
-		options.GeoM.Translate(float64(copy.X), float64(copy.Y))
-
-		if copy.Face == 0 {
-			log.Fatal("Error: Item has no set face")
-		}
-		itemIndex := (copy.Face - 1) * tileSize
-		screen.DrawImage(g.itemImages[copy.Item].SubImage(image.Rect(
+		itemIndex := (item.Face - 1) * img.Bounds().Dy()
+		img = img.SubImage(image.Rect(
 			itemIndex,
 			0,
-			itemIndex+tileSize,
-			tileSize)).(*ebiten.Image), options)
+			itemIndex+img.Bounds().Dy(),
+			img.Bounds().Dy())).(*ebiten.Image)
+		options.GeoM.Scale(float64(tileSize)/float64(img.Bounds().Dx()),
+			float64(tileSize)/float64(img.Bounds().Dy()))
+		options.GeoM.Translate(float64(item.X), float64(item.Y))
+
+		if item.Face == 0 {
+			log.Fatal("Error: Item has no set face")
+		}
+		screen.DrawImage(img, options)
 	}
 
 }

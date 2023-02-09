@@ -45,9 +45,12 @@ func (g *Game) SetTileStage(tileArray [stageSizeY][stageSizeX]int) {
 func (g *Game) DrawTiles(screen *ebiten.Image) {
 	for y := 0; y < stageSizeY; y++ {
 		for x := 0; x < stageSizeX; x++ {
+			img := g.tileImages[TileType(g.TileStage[y][x])]
 			options := &ebiten.DrawImageOptions{}
+			options.GeoM.Scale(float64(tileSize)/float64(img.Bounds().Dx()),
+				float64(tileSize)/float64(img.Bounds().Dy()))
 			options.GeoM.Translate(float64(x*tileSize), float64(y*tileSize))
-			screen.DrawImage(g.tileImages[TileType(g.TileStage[y][x])], options)
+			screen.DrawImage(img, options)
 		}
 	}
 

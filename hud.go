@@ -62,18 +62,21 @@ func (g Game) DrawHotbar(screen *ebiten.Image) {
 	var onTop *ebiten.Image
 	var topOptions *ebiten.DrawImageOptions
 	for index, object := range g.UIObjects {
+		img := g.objectImages[object.Object]
 		options = &ebiten.DrawImageOptions{}
+		options.GeoM.Scale(float64(tileSize)/float64(img.Bounds().Dx()),
+			float64(tileSize)/float64(img.Bounds().Dy()))
 		if object.isDragged {
 			x, y := ebiten.CursorPosition()
 			options.GeoM.Translate(float64(x), float64(y))
-			onTop = g.objectImages[object.Object]
+			onTop = img
 			topOptions = options
 		} else {
 			object.uiPosition = index*(tileSize+hotbarSpacing) + (screenWidth-len(g.UIObjects)*(tileSize+hotbarSpacing))/2
 			options.GeoM.Translate(
 				float64(object.uiPosition),
 				float64(screenHeight-tileSize-hotbarSpacing))
-			screen.DrawImage(g.objectImages[object.Object], options)
+			screen.DrawImage(img, options)
 		}
 	}
 	if onTop != nil {
