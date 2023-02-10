@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	_ "image/png"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -182,7 +181,7 @@ func (g *Game) SaveGame() {
 		log.Fatal(err)
 	}
 
-	err = ioutil.WriteFile(saveFilename, bytes, 0644)
+	err = os.WriteFile(saveFilename, bytes, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
