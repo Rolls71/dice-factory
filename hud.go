@@ -20,7 +20,7 @@ var darkGrey color.RGBA = color.RGBA{0x55, 0x55, 0x55, 0xff}
 func (g *Game) UnlockObject(objectType ObjectType) {
 	switch objectType {
 	case Builder:
-		if g.ObjectCount[objectType] >= 3 {
+		if g.ObjectCount[objectType] == 4 {
 			g.SpawnUIObject(Upgrader)
 		}
 	}

@@ -14,10 +14,10 @@ import (
 
 const (
 	screenWidth  int = 1366
-	screenHeight int = 768 // was 480
+	screenHeight int = 768
 )
 
-const tileSize int = 64 // was 32
+const tileSize int = 64
 
 const (
 	frameRate  int     = 60
@@ -125,9 +125,12 @@ func NewGame() *Game {
 	game.InitImages()
 	game.InitHUD()
 
-	game.SpawnObject(Builder, 5, 5, South)
+	builder := game.SpawnObject(Builder, 5, 5, South)
 	game.SpawnObject(ConveyorBelt, 5, 6, South)
 	game.SpawnObject(Collector, 5, 7, South)
+	game.SpawnObject(Collector, 5, 8, South)
+
+	game.SpawnItem(PlainD6, builder)
 
 	/* TEST OBJECTS
 	// builders

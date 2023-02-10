@@ -16,9 +16,9 @@ func (g *Game) Cost(object ObjectType) uint64 {
 	case ConveyorBelt:
 		return uint64(math.Pow(float64(g.ObjectCount[object])+1, 2))
 	case Builder:
-		return uint64(math.Pow(10, float64(g.ObjectCount[object])+1))
+		return uint64(math.Pow(2, float64(g.ObjectCount[object])+1))
 	case Upgrader:
-		return uint64(math.Pow(10, float64(g.ObjectCount[object])+1) * 30)
+		return uint64(math.Pow(3, float64(g.ObjectCount[object])+1) * 10)
 	}
 	return maxUint64
 }

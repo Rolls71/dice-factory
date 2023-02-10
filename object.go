@@ -10,12 +10,12 @@ import (
 )
 
 const (
-	buildCycleSeconds = 3 // Seconds per build cycle.
+	buildCycleSeconds = 8 // Seconds per build cycle.
 )
 
 type ObjectType int
 
-const conveyorSpeed float64 = 32 // pixels per second
+const conveyorSpeed float64 = float64(tileSize) / 2.0 // pixels per second
 
 const (
 	PlainObject  ObjectType = iota
