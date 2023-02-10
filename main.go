@@ -85,6 +85,7 @@ func (g *Game) InitImages() {
 	//initialise items
 	g.NewItem(PlainD6, "d6.png")
 	g.NewItem(GoldD6, "gold_d6.png")
+	g.NewItem(Truck, "truck.png")
 }
 
 // NewGame constructs and returns a Game struct.
@@ -125,10 +126,12 @@ func NewGame() *Game {
 	game.InitImages()
 	game.InitHUD()
 
-	builder := game.SpawnObject(Builder, 5, 5, South)
-	game.SpawnObject(ConveyorBelt, 5, 6, South)
+	builder := game.SpawnObject(Builder, 6, 5, South)
+	game.SpawnObject(ConveyorBelt, 6, 6, West)
+
+	collector := game.SpawnObject(Collector, 5, 6, South)
 	game.SpawnObject(Collector, 5, 7, South)
-	game.SpawnObject(Collector, 5, 8, South)
+	game.SpawnItem(Truck, collector)
 
 	game.SpawnItem(PlainD6, builder)
 

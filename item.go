@@ -17,7 +17,10 @@ type ItemType int
 const (
 	PlainD6 ItemType = iota
 	GoldD6
+	Truck
 )
+
+const truckSpeed float64 = float64(tileSize)
 
 const (
 	d6Min          int    = 1
@@ -65,33 +68,33 @@ func (i *Item) Roll() {
 
 // Step moves an item conveyorSpeed units per second towards target
 // Stores catchup when theres movement left, adds on next movement
-func (i *Item) Step() {
+func (i *Item) Step(speed float64) {
 	xDelta := ToReal(i.TargetX) - i.X
-	if math.Abs(xDelta) < conveyorSpeed*frameDelta {
+	if math.Abs(xDelta) < speed*frameDelta {
 		if i.X != ToReal(i.TargetX) {
-			i.CatchupX += conveyorSpeed*frameDelta - math.Abs(xDelta)
+			i.CatchupX += speed*frameDelta - math.Abs(xDelta)
 		}
 		i.X = ToReal(i.TargetX)
 	} else {
 		if xDelta > 0 {
-			i.X += conveyorSpeed*frameDelta + i.CatchupX
+			i.X += speed*frameDelta + i.CatchupX
 		} else {
-			i.X -= conveyorSpeed*frameDelta + i.CatchupX
+			i.X -= speed*frameDelta + i.CatchupX
 		}
 		i.CatchupX = 0
 	}
 
 	yDelta := ToReal(i.TargetY) - i.Y
-	if math.Abs(yDelta) < conveyorSpeed*frameDelta {
+	if math.Abs(yDelta) < speed*frameDelta {
 		if i.Y != ToReal(i.TargetY) {
-			i.CatchupY += conveyorSpeed*frameDelta - math.Abs(yDelta)
+			i.CatchupY += speed*frameDelta - math.Abs(yDelta)
 		}
 		i.Y = ToReal(i.TargetY)
 	} else {
 		if yDelta > 0 {
-			i.Y += conveyorSpeed*frameDelta + i.CatchupY
+			i.Y += speed*frameDelta + i.CatchupY
 		} else {
-			i.Y -= conveyorSpeed*frameDelta + i.CatchupY
+			i.Y -= speed*frameDelta + i.CatchupY
 		}
 		i.CatchupY = 0
 	}
@@ -100,21 +103,28 @@ func (i *Item) Step() {
 // UpdateObjects will iterate through each Item and switch,
 // depending on their type. Each Item type may have different functionality.
 func (g *Game) UpdateItems() {
-	for _, copy := range g.Items {
-		isObject, _ := g.GetObjectAt(copy.TargetX, copy.TargetY)
-		if !isObject {
-			delete(g.Items, copy.ID)
-			continue
+	for _, item := range g.Items {
+		switch item.Item {
+		case Truck:
+			// has item reached target position?
+			if item.X == ToReal(item.TargetX) &&
+				item.Y == ToReal(item.TargetY) {
+				continue
+			}
+			g.Items[item.ID].Step(truckSpeed)
+		default:
+			isObject, _ := g.GetObjectAt(item.TargetX, item.TargetY)
+			if !isObject {
+				delete(g.Items, item.ID)
+				continue
+			}
+			// has item reached target position?
+			if item.X == ToReal(item.TargetX) &&
+				item.Y == ToReal(item.TargetY) {
+				continue
+			}
+			g.Items[item.ID].Step(conveyorSpeed)
 		}
-		switch copy.Item {
-		case PlainD6:
-		}
-		// has item reached target position?
-		if copy.X == ToReal(copy.TargetX) &&
-			copy.Y == ToReal(copy.TargetY) {
-			continue
-		}
-		g.Items[copy.ID].Step()
 	}
 }
 
@@ -135,9 +145,16 @@ func (g *Game) SpawnItem(itemType ItemType, creator *Object) *Item {
 	item := &Item{}
 	x, y := creator.X, creator.Y
 	item.SetID(g.NextID())
-	item.SetRealCoordinate(ToReal(x), ToReal(y))
+	item.Item = itemType
+	switch itemType {
+	case Truck:
+		item.SetRealCoordinate(ToReal(0), ToReal(y))
+	default:
+		item.Roll()
+		item.SetRealCoordinate(ToReal(x), ToReal(y))
+
+	}
 	item.SetTargetPosition(x, y)
-	item.Roll()
 
 	g.Items[item.ID] = item
 	return item
@@ -167,24 +184,36 @@ func (g *Game) DrawItems(screen *ebiten.Image) {
 	}
 
 	sort.SliceStable(itemArray, func(i, j int) bool {
-		return itemArray[i].ID < itemArray[j].ID
+		if itemArray[i].Item == Truck && itemArray[j].Item != Truck {
+			return false
+		} else {
+			return itemArray[i].ID > itemArray[j].ID
+		}
 	})
 
 	for _, item := range itemArray {
 		img := g.itemImages[item.Item]
 		options := &ebiten.DrawImageOptions{}
-		itemIndex := (item.Face - 1) * img.Bounds().Dy()
-		img = img.SubImage(image.Rect(
-			itemIndex,
-			0,
-			itemIndex+img.Bounds().Dy(),
-			img.Bounds().Dy())).(*ebiten.Image)
-		options.GeoM.Scale(float64(tileSize)/float64(img.Bounds().Dx()),
-			float64(tileSize)/float64(img.Bounds().Dy()))
-		options.GeoM.Translate(float64(item.X), float64(item.Y))
+		switch item.Item {
+		case Truck:
+			img = g.itemImages[Truck]
+			options.GeoM.Scale(float64(tileSize*4)/float64(img.Bounds().Dx()),
+				float64(tileSize*2)/float64(img.Bounds().Dy()))
+			options.GeoM.Translate(item.X-float64(tileSize*3), item.Y)
+		default:
+			itemIndex := (item.Face - 1) * img.Bounds().Dy()
+			img = img.SubImage(image.Rect(
+				itemIndex,
+				0,
+				itemIndex+img.Bounds().Dy(),
+				img.Bounds().Dy())).(*ebiten.Image)
+			options.GeoM.Scale(float64(tileSize)/float64(img.Bounds().Dx()),
+				float64(tileSize)/float64(img.Bounds().Dy()))
+			options.GeoM.Translate(item.X, item.Y)
 
-		if item.Face == 0 {
-			log.Fatal("Error: Item has no set face")
+			if item.Face == 0 {
+				log.Fatal("Error: Item has no set face")
+			}
 		}
 		screen.DrawImage(img, options)
 	}

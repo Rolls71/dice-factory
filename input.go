@@ -37,7 +37,8 @@ func (g *Game) onDragStart(mouseButton ebiten.MouseButton) {
 		x, y := ebiten.CursorPosition()
 		if !IsInGameArea(x, y) {
 			for _, object := range g.UIObjects {
-				if x > object.uiPosition && x < object.uiPosition+tileSize {
+				if x > object.uiPosition &&
+					x < object.uiPosition+tileSize {
 					object.isDragged = true
 					g.isDragging = true
 					return
@@ -46,7 +47,7 @@ func (g *Game) onDragStart(mouseButton ebiten.MouseButton) {
 		} else {
 			xTile, yTile := GetCursorCoordinates()
 			isObject, object := g.GetObjectAt(xTile, yTile)
-			if isObject {
+			if isObject && object.Object != Collector {
 				object.isDragged = true
 				g.isDragging = true
 			}

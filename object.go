@@ -15,7 +15,7 @@ const (
 
 type ObjectType int
 
-const conveyorSpeed float64 = float64(tileSize) / 2.0 // pixels per second
+const conveyorSpeed float64 = float64(tileSize) / 1.75 // pixels per second
 
 const (
 	PlainObject  ObjectType = iota
@@ -92,8 +92,8 @@ func (g *Game) IsItemMoveable(object *Object) (bool, *Object) {
 	}
 
 	// is there an item targeting the neighbor?
-	isItem, _ := g.GetItemTargeting(neighbor)
-	if isItem {
+	isItem, item := g.GetItemTargeting(neighbor)
+	if isItem && item.Item != Truck {
 		return false, neighbor
 	}
 
@@ -140,7 +140,7 @@ func (g *Game) UpdateObjects() {
 			g.MoveItemOn(object)
 		case Collector:
 			isItemOn, item := g.IsItemOn(object)
-			if isItemOn {
+			if isItemOn && item.Item != Truck {
 				g.AddDie(item.Value())
 				delete(g.Items, item.ID)
 			}
