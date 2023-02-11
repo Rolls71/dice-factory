@@ -109,6 +109,10 @@ func (g *Game) UpdateItems() {
 			// has item reached target position?
 			if item.X == ToReal(item.TargetX) &&
 				item.Y == ToReal(item.TargetY) {
+				isTarget, target := g.GetObjectAt(item.TargetX, item.TargetY)
+				if isTarget {
+					target.isCollecting = true
+				}
 				continue
 			}
 			g.Items[item.ID].Step(truckSpeed)

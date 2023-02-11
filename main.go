@@ -136,6 +136,7 @@ func NewGame() *Game {
 	collector := game.SpawnObject(Collector, 5, 5, South)
 	game.SpawnObject(Collector, 5, 6, South)
 	game.SpawnItem(Truck, collector)
+	//game.Storages[Truck1] = &NewStorage(Truck1, 10, 1)
 
 	game.SpawnItem(Plain, builder)
 

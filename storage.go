@@ -4,6 +4,7 @@ type StorageType int
 
 const (
 	Warehouse = iota
+	Truck1
 )
 
 type Storage struct {
@@ -32,16 +33,9 @@ func (s *Storage) StoreDie(item ItemType, face int) bool {
 	}
 	_, exists := s.Dice[item]
 	if exists {
-		_, exists = s.Dice[item][face]
-		if exists {
-			s.Dice[item][face]++
-			s.Count++
-			return true
-		} else {
-			s.Dice[item][face] = 1
-			s.Count++
-			return true
-		}
+		s.Dice[item][face]++
+		s.Count++
+		return true
 	} else if s.TypeLimit == 0 || s.TypeCount <= s.TypeLimit {
 		s.Dice[item] = map[int]uint64{face: 1}
 		s.Count++

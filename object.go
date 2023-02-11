@@ -41,8 +41,9 @@ type Object struct {
 	ID     uint64       // unique generated identifier
 	Facing ObjectFacing // default South
 
-	uiPosition int  // stores position of ui objects
-	isDragged  bool // default false
+	uiPosition   int  // stores position of ui objects
+	isDragged    bool // default false
+	isCollecting bool // is the object collecting
 }
 
 func (o *Object) SetID(id uint64) {
@@ -97,12 +98,19 @@ func (g *Game) IsItemMoveable(object *Object) (bool, *Object) {
 		return false, neighbor
 	}
 
-	if object.Object == ConveyorBelt ||
-		neighbor.Object == ConveyorBelt {
-		return true, neighbor
+	// is the item moving to or from a conveyor belt?
+	if object.Object != ConveyorBelt &&
+		neighbor.Object != ConveyorBelt {
+		return false, neighbor
 	}
 
-	return false, neighbor
+	// is the item moving onto an unready collector?
+	if neighbor.Object == Collector &&
+		!neighbor.isCollecting {
+		return false, neighbor
+	}
+
+	return true, neighbor
 }
 
 // MoveItemOn tests IsItemOn and IsItemMoveable before setting an item's
@@ -141,7 +149,6 @@ func (g *Game) UpdateObjects() {
 		case Collector:
 			isItemOn, item := g.IsItemOn(object)
 			if isItemOn && item.Item != Truck {
-				g.Storages[Warehouse].StoreDie(item.Item, item.Face)
 				g.SellDie(item.Item, item.Value())
 				delete(g.Items, item.ID)
 			}
