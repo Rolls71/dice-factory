@@ -15,8 +15,8 @@ import (
 type ItemType int
 
 const (
-	PlainD6 ItemType = iota
-	GoldD6
+	Plain ItemType = iota
+	Gold
 	Truck
 )
 
@@ -53,9 +53,9 @@ func (i *Item) SetID(id uint64) {
 
 func (i *Item) Value() uint64 {
 	switch i.Item {
-	case PlainD6:
+	case Plain:
 		return uint64(i.Face)
-	case GoldD6:
+	case Gold:
 		return uint64(i.Face) * goldMultiplier
 	}
 	log.Fatal("Error: unknown itemType")

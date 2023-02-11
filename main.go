@@ -54,7 +54,7 @@ type Game struct {
 	UIObjects   []*Object                   // Stores Objects in the UI Overlay
 	ObjectCount map[ObjectType]uint64       // Tracks the number of Objects
 	Items       map[uint64]*Item            // Stores Item instances to be drawn.
-	Balance     Currency                    // Stores currency data
+	Currencies  map[ItemType]uint64         // Stores different currencies
 	ID          uint64                      // Stores id of last item/object made.
 
 	ticks      uint64 // Stores tick count
@@ -82,8 +82,8 @@ func (g *Game) InitImages() {
 	g.NewObject(Upgrader, "plain_object.png")
 
 	//initialise items
-	g.NewItem(PlainD6, "d6.png")
-	g.NewItem(GoldD6, "gold_d6.png")
+	g.NewItem(Plain, "d6.png")
+	g.NewItem(Gold, "gold_d6.png")
 	g.NewItem(Truck, "truck.png")
 }
 
@@ -100,7 +100,7 @@ func NewGame() *Game {
 		UIObjects:   []*Object{},
 		ObjectCount: map[ObjectType]uint64{},
 		Items:       map[uint64]*Item{},
-		Balance:     Currency{},
+		Currencies:  map[ItemType]uint64{},
 	}
 
 	// set up tile stage
@@ -125,14 +125,14 @@ func NewGame() *Game {
 	game.InitImages()
 	game.InitHUD()
 
-	builder := game.SpawnObject(Builder, 6, 5, South)
-	game.SpawnObject(ConveyorBelt, 6, 6, West)
+	builder := game.SpawnObject(Builder, 6, 4, South)
+	game.SpawnObject(ConveyorBelt, 6, 5, West)
 
-	collector := game.SpawnObject(Collector, 5, 6, South)
-	game.SpawnObject(Collector, 5, 7, South)
+	collector := game.SpawnObject(Collector, 5, 5, South)
+	game.SpawnObject(Collector, 5, 6, South)
 	game.SpawnItem(Truck, collector)
 
-	game.SpawnItem(PlainD6, builder)
+	game.SpawnItem(Plain, builder)
 
 	/* TEST OBJECTS
 	// builders
@@ -215,7 +215,7 @@ func (g *Game) Update() error {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
 		isObject, object := g.GetObjectAt(x, y)
 		if isObject {
-			g.SpawnItem(PlainD6, object)
+			g.SpawnItem(Plain, object)
 		}
 	}
 	if inpututil.IsKeyJustPressed(ebiten.Key1) {

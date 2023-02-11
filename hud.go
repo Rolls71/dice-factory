@@ -44,10 +44,13 @@ func (g *Game) SpawnUIObject(
 func (g *Game) DrawHUD(screen *ebiten.Image) {
 	g.DrawHotbar(screen)
 
-	string := fmt.Sprintf("Dice Points: %d\n", g.Balance.DicePoints)
-	string += fmt.Sprintf("Conveyor Belt: %d\n", g.Cost(ConveyorBelt))
-	string += fmt.Sprintf("Builder: %d\n", g.Cost(Builder))
-	string += fmt.Sprintf("Upgrader: %d\n", g.Cost(Upgrader))
+	string := fmt.Sprintf("Dice Points: %d\n", g.Currencies[Plain])
+	_, val := g.Cost(ConveyorBelt)
+	string += fmt.Sprintf("Conveyor Belt: %d\n", val)
+	_, val = g.Cost(Builder)
+	string += fmt.Sprintf("Builder: %d\n", val)
+	_, val = g.Cost(Upgrader)
+	string += fmt.Sprintf("Upgrader: %d\n", val)
 	ebitenutil.DebugPrint(screen, string)
 }
 

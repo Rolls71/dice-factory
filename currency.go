@@ -5,34 +5,31 @@ import (
 	"math"
 )
 
-type Currency struct {
-	DicePoints uint64
+// SellDie adds a value to DicePoints
+func (g *Game) SellDie(item ItemType, value uint64) {
+	g.Currencies[item] += value
 }
 
 // Cost returns the calculated cost of an ObjectType.
 // Defaults to the max uint64 value.
-func (g *Game) Cost(object ObjectType) uint64 {
+func (g *Game) Cost(object ObjectType) (ItemType, uint64) {
 	switch object {
 	case ConveyorBelt:
-		return uint64(math.Pow(float64(g.ObjectCount[object])+1, 2))
+		return Plain, uint64(math.Pow(float64(g.ObjectCount[object])+1, 2))
 	case Builder:
-		return uint64(math.Pow(2, float64(g.ObjectCount[object])+1))
+		return Plain, uint64(math.Pow(2, float64(g.ObjectCount[object])+1))
 	case Upgrader:
-		return uint64(math.Pow(3, float64(g.ObjectCount[object])+1) * 10)
+		return Plain, uint64(math.Pow(3, float64(g.ObjectCount[object])+1) * 10)
+	default:
+		return Plain, maxUint64
 	}
-	return maxUint64
-}
-
-// AddDie adds a value to DicePoints
-func (g *Game) AddDie(value uint64) {
-	g.Balance.DicePoints += (value)
 }
 
 // Pay subtracts given value from DicePoints unless value is less than
 // DicePoints. Returns true if the payment was successful
-func (g *Game) Pay(value uint64) bool {
-	if g.Balance.DicePoints >= value {
-		g.Balance.DicePoints -= value
+func (g *Game) Pay(item ItemType, value uint64) bool {
+	if g.Currencies[item] >= value {
+		g.Currencies[item] -= value
 		return true
 	}
 	return false

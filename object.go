@@ -134,20 +134,20 @@ func (g *Game) UpdateObjects() {
 			if g.ticks%uint64(frameRate*buildCycleSeconds) == 0 {
 				isItemMoveable, _ := g.IsItemMoveable(object)
 				if isItemMoveable {
-					g.SpawnItem(PlainD6, object)
+					g.SpawnItem(Plain, object)
 				}
 			}
 			g.MoveItemOn(object)
 		case Collector:
 			isItemOn, item := g.IsItemOn(object)
 			if isItemOn && item.Item != Truck {
-				g.AddDie(item.Value())
+				g.SellDie(item.Item, item.Value())
 				delete(g.Items, item.ID)
 			}
 		case Upgrader:
 			isItemOn, item := g.IsItemOn(object)
 			if isItemOn && g.ticks%uint64(frameRate*buildCycleSeconds) == 0 {
-				g.SetItem(item, GoldD6)
+				g.SetItem(item, Gold)
 				g.MoveItemOn(object)
 			}
 		}
