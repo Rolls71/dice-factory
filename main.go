@@ -31,6 +31,7 @@ const (
 const saveFilename string = "save.json"
 
 const maxUint64 = ^uint64(0)
+const warehouseCapacity = 1000
 
 // ToReal converts a tile coordinate to a real coordinate
 func ToReal(i int) float64 {
@@ -55,6 +56,7 @@ type Game struct {
 	ObjectCount map[ObjectType]uint64       // Tracks the number of Objects
 	Items       map[uint64]*Item            // Stores Item instances to be drawn.
 	Currencies  map[ItemType]uint64         // Stores different currencies
+	Storages    map[StorageType]*Storage    // Stores a list of trucks and warehouses
 	ID          uint64                      // Stores id of last item/object made.
 
 	ticks      uint64 // Stores tick count
@@ -101,6 +103,9 @@ func NewGame() *Game {
 		ObjectCount: map[ObjectType]uint64{},
 		Items:       map[uint64]*Item{},
 		Currencies:  map[ItemType]uint64{},
+		Storages: map[StorageType]*Storage{
+			Warehouse: NewStorage(Warehouse, warehouseCapacity, 0),
+		},
 	}
 
 	// set up tile stage

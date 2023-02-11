@@ -13,9 +13,9 @@ const (
 	buildCycleSeconds = 8 // Seconds per build cycle.
 )
 
-type ObjectType int
-
 const conveyorSpeed float64 = float64(tileSize) / 1.75 // pixels per second
+
+type ObjectType int
 
 const (
 	PlainObject  ObjectType = iota
@@ -141,6 +141,7 @@ func (g *Game) UpdateObjects() {
 		case Collector:
 			isItemOn, item := g.IsItemOn(object)
 			if isItemOn && item.Item != Truck {
+				g.Storages[Warehouse].StoreDie(item.Item, item.Face)
 				g.SellDie(item.Item, item.Value())
 				delete(g.Items, item.ID)
 			}
