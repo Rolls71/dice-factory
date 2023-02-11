@@ -4,8 +4,10 @@ type StorageType int
 
 const (
 	Warehouse = iota
-	Truck1
+	TruckTrailer
 )
+
+const warehouseCapacity uint64 = 1000
 
 type Storage struct {
 	Storage   StorageType
@@ -16,6 +18,8 @@ type Storage struct {
 	TypeCount int                         // How many types of dice are there?
 }
 
+// NewStorage constructs a new Storage.
+// the Dice map is initialised, but containing maps are not.
 func NewStorage(storageType StorageType, capacity uint64, typeLimit int) *Storage {
 	return &Storage{
 		Dice:      map[ItemType]map[int]uint64{},

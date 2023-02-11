@@ -31,7 +31,6 @@ const (
 const saveFilename string = "save.json"
 
 const maxUint64 = ^uint64(0)
-const warehouseCapacity = 1000
 
 // ToReal converts a tile coordinate to a real coordinate
 func ToReal(i int) float64 {
