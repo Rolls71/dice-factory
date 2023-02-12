@@ -46,19 +46,6 @@ type Object struct {
 	isCollecting bool // is the object collecting
 }
 
-func (o *Object) SetID(id uint64) {
-	o.ID = id
-}
-
-func (o *Object) SetPosition(x, y int) {
-	o.X = x
-	o.Y = y
-}
-
-func (o *Object) SetFacing(dir ObjectFacing) {
-	o.Facing = dir
-}
-
 func (o *Object) Rotate() {
 	o.Facing = (o.Facing + 1) % 4
 }
@@ -127,7 +114,8 @@ func (g *Game) MoveItemOn(object *Object) {
 	}
 
 	// set the item to target that object
-	item.SetTargetPosition(neighbor.X, neighbor.Y)
+	item.TargetX = neighbor.X
+	item.TargetY = neighbor.Y
 }
 
 // UpdateObjects will iterate through each Object and switch,
@@ -223,9 +211,10 @@ func (g *Game) SpawnObject(
 	object := Object{
 		Object: objectType,
 	}
-	object.SetID(g.NextID())
-	object.SetPosition(x, y)
-	object.SetFacing(facing)
+	object.ID = g.NextID()
+	object.X = x
+	object.Y = y
+	object.Facing = facing
 
 	g.ObjectCount[objectType] += 1
 	g.UnlockObject(objectType)

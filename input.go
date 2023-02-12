@@ -77,7 +77,8 @@ func (g *Game) onDragEnd(mouseButton ebiten.MouseButton) {
 				object.isDragged = false
 				g.isDragging = false
 				if !isObject && IsInGameArea(x, y) {
-					object.SetPosition(x/tileSize, y/tileSize)
+					object.X = x / tileSize
+					object.Y = y / tileSize
 				}
 				return
 			}

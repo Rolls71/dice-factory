@@ -37,20 +37,6 @@ type Item struct {
 	CatchupX, CatchupY float64 // if item is behind, saves lost distance
 }
 
-func (i *Item) SetRealCoordinate(x, y float64) {
-	i.X = x
-	i.Y = y
-}
-
-func (i *Item) SetTargetPosition(x, y int) {
-	i.TargetX = x
-	i.TargetY = y
-}
-
-func (i *Item) SetID(id uint64) {
-	i.ID = id
-}
-
 func (i *Item) Value() uint64 {
 	switch i.Item {
 	case Plain:
@@ -148,17 +134,20 @@ func (g *Game) NewItem(itemType ItemType, imageName string) {
 func (g *Game) SpawnItem(itemType ItemType, creator *Object) *Item {
 	item := &Item{}
 	x, y := creator.X, creator.Y
-	item.SetID(g.NextID())
+	item.ID = g.NextID()
 	item.Item = itemType
 	switch itemType {
 	case Truck:
-		item.SetRealCoordinate(ToReal(0), ToReal(y))
+		item.X = ToReal(0)
+		item.Y = ToReal(y)
 	default:
 		item.Roll()
-		item.SetRealCoordinate(ToReal(x), ToReal(y))
+		item.X = ToReal(x)
+		item.Y = ToReal(y)
 
 	}
-	item.SetTargetPosition(x, y)
+	item.TargetX = x
+	item.TargetY = y
 
 	g.Items[item.ID] = item
 	return item

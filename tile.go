@@ -33,13 +33,6 @@ func (g *Game) NewTile(
 	g.tileImages[tile] = img
 }
 
-// SetTileStage sets the value of every Tile on-screen
-// Requires a 2D array of ints to fit TileType
-// Given array must be of type [stageSizeY][stageSizeX]int
-func (g *Game) SetTileStage(tileArray [stageSizeY][stageSizeX]int) {
-	g.TileStage = tileArray
-}
-
 // DrawTiles will draw every Tile in the game's list of objects.
 // Tiles are drawn on their stored grid coordinate.
 func (g *Game) DrawTiles(screen *ebiten.Image) {
