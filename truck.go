@@ -30,6 +30,13 @@ type Truck struct {
 	IsExiting       bool
 }
 
+func (t *Truck) Send() {
+	for _, collector := range t.Collectors {
+		collector.IsCollecting = false
+	}
+	t.IsExiting = true
+}
+
 // Step moves the truck towards its target with decreasing velocity.
 // If truck IsExiting, it moves away from its target with increasing velocity.
 // Returns true on the same tick of arrival
@@ -55,6 +62,44 @@ func (t *Truck) Step() bool {
 	t.Y = (-math.Pow(t.PercentComplete-1, 2)+1)*totalDistance + t.SpawnY
 
 	return onComplete
+}
+
+func (g *Game) UpdateTrucks() {
+	for _, truck := range g.Trucks {
+		// Is the truck currently being loaded?
+		if truck.Collectors[0].IsCollecting {
+			continue
+		}
+
+		// Is the truck at it's destination?
+		if (truck.PercentComplete == 1 && !truck.IsExiting) ||
+			(truck.PercentComplete == 0 && truck.IsExiting) {
+			continue
+		}
+
+		// Step truck, and on the last frame enable collectors if arriving
+		if truck.Step() {
+			if !truck.IsExiting {
+				for _, collector := range truck.Collectors {
+					collector.IsCollecting = true
+				}
+			} else {
+				// Spawn a new copy of this truck
+				g.SpawnTruck(
+					truck.Truck,
+					truck.Collectors,
+					ToTile(truck.SpawnX),
+					ToTile(truck.SpawnY),
+					ToTile(truck.TargetX),
+					ToTile(truck.TargetY),
+					truck.Width,
+					truck.Height,
+				)
+				// Delete old version of truck
+				delete(g.Trucks, truck.ID)
+			}
+		}
+	}
 }
 
 func (g *Game) SpawnTruck(
@@ -88,30 +133,6 @@ func (g *Game) SpawnTruck(
 	g.Trucks[truck.ID] = truck
 
 	return truck
-}
-
-func (g *Game) UpdateTrucks() {
-	for _, truck := range g.Trucks {
-		// Is the truck currently being loaded?
-		if truck.Collectors[0].isCollecting {
-			continue
-		}
-
-		// Is the truck at it's destination?
-		if (truck.PercentComplete == 1 && !truck.IsExiting) ||
-			(truck.PercentComplete == 0 && truck.IsExiting) {
-			continue
-		}
-
-		// Step truck, and on the last frame enable collectors if arriving
-		if truck.Step() {
-			if !truck.IsExiting {
-				for _, collector := range truck.Collectors {
-					collector.isCollecting = true
-				}
-			}
-		}
-	}
 }
 
 func (g *Game) NewTruck(truckType TruckType, imageName string) {

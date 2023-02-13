@@ -87,11 +87,20 @@ func (i *Item) Step(speed float64) {
 // depending on their type. Each Item type may have different functionality.
 func (g *Game) UpdateItems() {
 	for _, item := range g.Items {
-		isObject, _ := g.GetObjectAt(item.TargetX, item.TargetY)
+		isObject, object := g.GetObjectAt(item.TargetX, item.TargetY)
+
+		// if there is no object to go to
 		if !isObject {
 			delete(g.Items, item.ID)
 			continue
 		}
+
+		// if the truck has driven away while loading
+		if object.Object == Collector && !object.IsCollecting {
+			delete(g.Items, item.ID)
+			continue
+		}
+
 		// has item reached target position?
 		if item.X == ToReal(item.TargetX) &&
 			item.Y == ToReal(item.TargetY) {

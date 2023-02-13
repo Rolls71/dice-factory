@@ -41,9 +41,10 @@ type Object struct {
 	ID     uint64      // unique generated identifier
 	Facing CardinalDir // default South
 
-	uiPosition   int  // stores position of ui objects
-	isDragged    bool // default false
-	isCollecting bool // is the object collecting
+	IsCollecting bool // is the object collecting
+
+	uiPosition int  // stores position of ui objects
+	isDragged  bool // default false
 }
 
 func (o *Object) Rotate() {
@@ -93,7 +94,7 @@ func (g *Game) IsItemMoveable(object *Object) (bool, *Object) {
 
 	// is the item moving onto an unready collector?
 	if neighbor.Object == Collector &&
-		!neighbor.isCollecting {
+		!neighbor.IsCollecting {
 		return false, neighbor
 	}
 

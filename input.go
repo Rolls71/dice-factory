@@ -24,9 +24,27 @@ func IsInGameArea(x, y int) bool {
 // UpdateInput runs all major input functions.
 // Keys can be rebound here
 func (g *Game) UpdateInput() {
+	g.onClick(ebiten.MouseButtonLeft)
 	g.onDragStart(ebiten.MouseButtonLeft)
 	g.onDragEnd(ebiten.MouseButtonLeft)
 	g.onRotate(ebiten.KeyR)
+}
+
+func (g *Game) onClick(mouseButton ebiten.MouseButton) {
+	if inpututil.IsMouseButtonJustReleased(mouseButton) {
+		x, y := GetCursorCoordinates()
+		if IsInGameArea(x, y) {
+			for _, truck := range g.Trucks {
+				if truck.Collectors[0].IsCollecting &&
+					x >= ToTile(truck.X) &&
+					x < ToTile(truck.X)+truck.Width &&
+					y >= ToTile(truck.Y) &&
+					y < ToTile(truck.Y)+truck.Height {
+					truck.Send()
+				}
+			}
+		}
+	}
 }
 
 // onDragStart tests if an Object has been selected.

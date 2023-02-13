@@ -136,7 +136,7 @@ func NewGame() *Game {
 	collector2 := game.SpawnObject(Collector, 5, 6, South)
 
 	game.SpawnTruck(BasicTruck, []*Object{collector1, collector2},
-		-4, 5, 2, 5, 4, 2)
+		-5, 5, 2, 5, 4, 2)
 
 	game.SpawnItem(Plain, builder)
 
