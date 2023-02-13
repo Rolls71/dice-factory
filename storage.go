@@ -9,7 +9,13 @@ const (
 
 const warehouseCapacity uint64 = 1000
 
+const (
+	truckCapacity  uint64 = 10
+	truckTypeLimit int    = 1
+)
+
 type Storage struct {
+	ID        uint64
 	Storage   StorageType
 	Dice      map[ItemType]map[int]uint64 // Stores number per face per dice type
 	Capacity  uint64                      // How many dice can be held
@@ -20,8 +26,9 @@ type Storage struct {
 
 // NewStorage constructs a new Storage.
 // the Dice map is initialised, but containing maps are not.
-func NewStorage(storageType StorageType, capacity uint64, typeLimit int) *Storage {
+func (g *Game) NewStorage(storageType StorageType, capacity uint64, typeLimit int) *Storage {
 	return &Storage{
+		ID:        g.NextID(),
 		Dice:      map[ItemType]map[int]uint64{},
 		Storage:   storageType,
 		Capacity:  capacity,

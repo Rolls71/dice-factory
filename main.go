@@ -48,6 +48,7 @@ type Game struct {
 	tileImages   map[TileType]*ebiten.Image   // Stores different types of Tiles.
 	objectImages map[ObjectType]*ebiten.Image // Stores different object images.
 	itemImages   map[ItemType]*ebiten.Image   // Stores different item images.
+	truckImages  map[TruckType]*ebiten.Image
 
 	TileStage   [stageSizeY][stageSizeX]int // Stores Tile instances to be drawn.
 	Objects     map[uint64]*Object          // Stores Object instances to be drawn.
@@ -55,8 +56,9 @@ type Game struct {
 	ObjectCount map[ObjectType]uint64       // Tracks the number of Objects
 	Items       map[uint64]*Item            // Stores Item instances to be drawn.
 	Currencies  map[ItemType]uint64         // Stores different currencies
-	Storages    map[StorageType]*Storage    // Stores a list of trucks and warehouses
-	ID          uint64                      // Stores id of last item/object made.
+	Storages    map[uint64]*Storage         // Stores a list of trucks and warehouses
+	Trucks      map[uint64]*Truck
+	ID          uint64 // Stores id of last item/object made.
 
 	ticks      uint64 // Stores tick count
 	isDragging bool   // Is an Object being dragged
@@ -65,26 +67,25 @@ type Game struct {
 
 // NextID increments the stored id and returns it
 func (g *Game) NextID() uint64 {
-	g.ID += 1
+	g.ID++
 	return g.ID
 }
 
 // InitImages will initialise all images
 func (g *Game) InitImages() {
-	// initialise tiles
 	g.NewTile(BasicGrass, "basic_grass.png")
 	g.NewTile(LongGrass, "long_grass.png")
 
-	// initialise objects
 	g.NewObject(PlainObject, "plain_object.png")
 	g.NewObject(ConveyorBelt, "conveyor_belt.png")
 	g.NewObject(Builder, "plain_object.png")
 	g.NewObject(Collector, "plain_object.png")
 	g.NewObject(Upgrader, "plain_object.png")
 
-	//initialise items
 	g.NewItem(Plain, "d6.png")
 	g.NewItem(Gold, "gold_d6.png")
+
+	g.NewTruck(BasicTruck, "truck.png")
 }
 
 // NewGame constructs and returns a Game struct.
@@ -94,6 +95,7 @@ func NewGame() *Game {
 		tileImages:   map[TileType]*ebiten.Image{},
 		objectImages: map[ObjectType]*ebiten.Image{},
 		itemImages:   map[ItemType]*ebiten.Image{},
+		truckImages:  map[TruckType]*ebiten.Image{},
 
 		TileStage:   [stageSizeY][stageSizeX]int{},
 		Objects:     map[uint64]*Object{},
@@ -101,9 +103,8 @@ func NewGame() *Game {
 		ObjectCount: map[ObjectType]uint64{},
 		Items:       map[uint64]*Item{},
 		Currencies:  map[ItemType]uint64{},
-		Storages: map[StorageType]*Storage{
-			Warehouse: NewStorage(Warehouse, warehouseCapacity, 0),
-		},
+		Storages:    map[uint64]*Storage{},
+		Trucks:      map[uint64]*Truck{},
 	}
 
 	// set up tile stage
@@ -131,10 +132,11 @@ func NewGame() *Game {
 	builder := game.SpawnObject(Builder, 6, 4, South)
 	game.SpawnObject(ConveyorBelt, 6, 5, West)
 
-	game.SpawnObject(Collector, 5, 5, South)
-	game.SpawnObject(Collector, 5, 6, South)
-	//game.SpawnTruck({collector1, collector2}, enterPos, collectPos, exitPos)
-	//	inside >>> game.Storages[Truck.ID] = &NewStorage(TruckTrailer, 10, 1)
+	collector1 := game.SpawnObject(Collector, 5, 5, South)
+	collector2 := game.SpawnObject(Collector, 5, 6, South)
+
+	game.SpawnTruck(BasicTruck, []*Object{collector1, collector2},
+		-4, 5, 2, 5, 4, 2)
 
 	game.SpawnItem(Plain, builder)
 
@@ -168,6 +170,7 @@ func LoadGame(filePath string) *Game {
 	game.tileImages = map[TileType]*ebiten.Image{}
 	game.objectImages = map[ObjectType]*ebiten.Image{}
 	game.itemImages = map[ItemType]*ebiten.Image{}
+	game.truckImages = map[TruckType]*ebiten.Image{}
 	game.InitImages()
 
 	return &game
@@ -213,6 +216,7 @@ func (g *Game) Update() error {
 	g.UpdateInput()
 	g.UpdateObjects()
 	g.UpdateItems()
+	g.UpdateTrucks()
 	return nil
 }
 
@@ -222,6 +226,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.DrawObjects(screen)
 	g.DrawItems(screen)
 	g.DrawHUD(screen)
+	g.DrawTrucks(screen)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (
