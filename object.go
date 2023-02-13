@@ -92,17 +92,12 @@ func (g *Game) IsItemMoveable(object *Object) (bool, *Object) {
 		return false, neighbor
 	}
 
-	// is the item moving onto an unready collector?
-	if neighbor.Object == Collector &&
-		!neighbor.IsCollecting {
-		return false, neighbor
-	}
-
 	return true, neighbor
 }
 
 // MoveItemOn tests IsItemOn and IsItemMoveable before setting an item's
-// target position to a neighbor.
+// target position to a neighbor. If the object is facing a collector,
+// it tests if the collector is full before moving
 func (g *Game) MoveItemOn(object *Object) {
 	isItemOn, item := g.IsItemOn(object)
 	if !isItemOn {
@@ -112,6 +107,23 @@ func (g *Game) MoveItemOn(object *Object) {
 	isItemMoveable, neighbor := g.IsItemMoveable(object)
 	if !isItemMoveable {
 		return
+	}
+
+	// is the item moving onto an unready collector?
+	if neighbor.Object == Collector {
+		if !neighbor.IsCollecting {
+			return
+		}
+		for _, truck := range g.Trucks {
+			for _, collector := range truck.Collectors {
+				if neighbor.ID != collector.ID {
+					continue
+				}
+				if !truck.Storage.StoreDie(item.Item, item.Face) {
+					return
+				}
+			}
+		}
 	}
 
 	// set the item to target that object
@@ -138,14 +150,6 @@ func (g *Game) UpdateObjects() {
 		case Collector:
 			isItemOn, item := g.IsItemOn(object)
 			if isItemOn {
-				for _, truck := range g.Trucks {
-					for _, collector := range truck.Collectors {
-						if object.ID == collector.ID {
-							truck.Storage.StoreDie(item.Item, item.Face)
-							break
-						}
-					}
-				}
 				delete(g.Items, item.ID)
 			}
 		case Upgrader:
