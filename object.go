@@ -131,7 +131,7 @@ func (g *Game) UpdateObjects() {
 			if g.ticks%uint64(frameRate*buildCycleSeconds) == 0 {
 				isItemMoveable, _ := g.IsItemMoveable(object)
 				if isItemMoveable {
-					g.SpawnItem(Plain, object)
+					g.SpawnItem(PlainD6, object)
 				}
 			}
 			g.MoveItemOn(object)
@@ -151,7 +151,7 @@ func (g *Game) UpdateObjects() {
 		case Upgrader:
 			isItemOn, item := g.IsItemOn(object)
 			if isItemOn && g.ticks%uint64(frameRate*buildCycleSeconds) == 0 {
-				g.SetItem(item, Gold)
+				g.SetItem(item, GoldD6, GoldBuck)
 				g.MoveItemOn(object)
 			}
 		}

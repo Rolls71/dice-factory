@@ -15,8 +15,8 @@ import (
 type ItemType int
 
 const (
-	Plain ItemType = iota
-	Gold
+	PlainD6 ItemType = iota
+	GoldD6
 )
 
 const (
@@ -27,7 +27,8 @@ const (
 
 type Item struct {
 	Item               ItemType
-	Face               int // value shown on face
+	Face               int          // value shown on face
+	Currency           CurrencyType // type of currency
 	X, Y               float64
 	ID                 uint64  // unique generated identifier
 	TargetX, TargetY   int     // index of target object
@@ -36,9 +37,9 @@ type Item struct {
 
 func (i *Item) Value() uint64 {
 	switch i.Item {
-	case Plain:
+	case PlainD6:
 		return uint64(i.Face)
-	case Gold:
+	case GoldD6:
 		return uint64(i.Face) * goldMultiplier
 	}
 	log.Fatal("Error: unknown itemType")
@@ -140,8 +141,10 @@ func (g *Game) SpawnItem(itemType ItemType, creator *Object) *Item {
 	return item
 }
 
-func (g *Game) SetItem(item *Item, itemType ItemType) {
+func (g *Game) SetItem(
+	item *Item, itemType ItemType, currencyType CurrencyType) {
 	item.Item = itemType
+	item.Currency = currencyType
 }
 
 // GetItemTargeting will find an Item targeting a given Object.

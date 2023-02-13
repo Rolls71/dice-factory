@@ -87,11 +87,20 @@ func (s *Storage) RemoveDie(item ItemType, face int) bool {
 	if exists {
 		_, exists = dice[face]
 		if exists {
-			if dice[face] > 0 {
+			if dice[face] > 1 {
 				s.Dice[item][face]--
 				s.Count--
 				return true
+			} else if dice[face] == 1 {
+				s.Dice[item][face]--
+				s.Count--
+				delete(s.Dice[item], face)
+				return true
 			}
+		}
+		if len(s.Dice[item]) == 0 {
+			s.TypeCount--
+			delete(s.Dice, item)
 		}
 	}
 	return false

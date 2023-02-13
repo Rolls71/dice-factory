@@ -55,7 +55,7 @@ type Game struct {
 	UIObjects   []*Object                   // Stores Objects in the UI Overlay
 	ObjectCount map[ObjectType]uint64       // Tracks the number of Objects
 	Items       map[uint64]*Item            // Stores Item instances to be drawn.
-	Currencies  map[ItemType]uint64         // Stores different currencies
+	Currencies  map[CurrencyType]uint64     // Stores different currencies
 	Storages    map[uint64]*Storage         // Stores a list of trucks and warehouses
 	Trucks      map[uint64]*Truck
 	Warehouse   *Storage // Stores the main storage stuct
@@ -83,8 +83,8 @@ func (g *Game) InitImages() {
 	g.NewObject(Collector, "plain_object.png")
 	g.NewObject(Upgrader, "plain_object.png")
 
-	g.NewItem(Plain, "d6.png")
-	g.NewItem(Gold, "gold_d6.png")
+	g.NewItem(PlainD6, "d6.png")
+	g.NewItem(GoldD6, "gold_d6.png")
 
 	g.NewTruck(BasicTruck, "truck.png")
 }
@@ -103,12 +103,12 @@ func NewGame() *Game {
 		UIObjects:   []*Object{},
 		ObjectCount: map[ObjectType]uint64{},
 		Items:       map[uint64]*Item{},
-		Currencies:  map[ItemType]uint64{},
+		Currencies:  map[CurrencyType]uint64{},
 		Storages:    map[uint64]*Storage{},
 		Trucks:      map[uint64]*Truck{},
 	}
 
-	game.Warehouse = game.NewStorage(Warehouse, 1000, 0)
+	game.Warehouse = game.NewStorage(Warehouse, warehouseCapacity, 0)
 
 	// set up tile stage
 	game.TileStage = [stageSizeY][stageSizeX]int{ /*
@@ -141,7 +141,7 @@ func NewGame() *Game {
 	game.SpawnTruck(BasicTruck, []*Object{collector1, collector2},
 		-5, 5, 2, 5, 4, 2)
 
-	game.SpawnItem(Plain, builder)
+	game.SpawnItem(PlainD6, builder)
 
 	return &game
 }
@@ -188,7 +188,7 @@ func (g *Game) Update() error {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
 		isObject, object := g.GetObjectAt(x, y)
 		if isObject {
-			g.SpawnItem(Plain, object)
+			g.SpawnItem(PlainD6, object)
 		}
 	}
 	if inpututil.IsKeyJustPressed(ebiten.Key1) {
@@ -220,6 +220,7 @@ func (g *Game) Update() error {
 	g.UpdateObjects()
 	g.UpdateItems()
 	g.UpdateTrucks()
+	g.UpdateCurrency()
 	return nil
 }
 

@@ -3,41 +3,101 @@ package main
 import (
 	_ "image/png"
 	"math"
+	"math/rand"
 )
 
-// SellDie adds a value to DicePoints
-func (g *Game) SellDie(item ItemType, value uint64) {
-	g.Currencies[item] += value
-}
+type CurrencyType int
+
+const (
+	PlainBuck = iota
+	GoldBuck
+)
+
+const sellRate = 4 // secs per sell
 
 // Cost returns the calculated cost of an ObjectType.
 // Defaults to the max uint64 value.
-func (g *Game) Cost(object ObjectType) (ItemType, uint64) {
+func (g *Game) Cost(object ObjectType) (CurrencyType, uint64) {
 	switch object {
 	case ConveyorBelt:
-		return Plain, uint64(math.Pow(float64(g.ObjectCount[object])+1, 2))
+		return PlainBuck, uint64(math.Pow(float64(g.ObjectCount[object])+1, 2))
 	case Builder:
-		return Plain, uint64(math.Pow(2, float64(g.ObjectCount[object])+1))
+		return PlainBuck, uint64(math.Pow(2, float64(g.ObjectCount[object])+1))
 	case Upgrader:
-		return Plain, uint64(math.Pow(3, float64(g.ObjectCount[object])+1) * 10)
+		return PlainBuck, uint64(math.Pow(3, float64(g.ObjectCount[object])+1) * 10)
 	default:
-		return Plain, maxUint64
+		return PlainBuck, maxUint64
 	}
 }
 
 // Pay subtracts given value from DicePoints unless value is less than
 // DicePoints. Returns true if the payment was successful
-func (g *Game) Pay(item ItemType, value uint64) bool {
-	if g.Currencies[item] >= value {
-		g.Currencies[item] -= value
+func (g *Game) Pay(currencyType CurrencyType, value uint64) bool {
+	if g.Currencies[currencyType] >= value {
+		g.Currencies[currencyType] -= value
 		return true
 	}
 	return false
 }
 
 // Buy will attempt to Pay for an object and spawn it if successful
-func (g *Game) Buy(object ObjectType, x, y int, objectFacing CardinalDir) {
-	if g.Pay(g.Cost(object)) {
-		g.SpawnObject(object, x, y, objectFacing)
+func (g *Game) Buy(objectType ObjectType, x, y int, objectFacing CardinalDir) {
+	if g.Pay(g.Cost(objectType)) {
+		g.SpawnObject(objectType, x, y, objectFacing)
 	}
+}
+
+func (g *Game) UpdateCurrency() {
+	if g.ticks%(uint64(frameRate)*sellRate) == 0 {
+		g.SellRandom()
+	}
+}
+
+// Sell adds the face of the die to the correct currency.
+// Sell is often best used with RemoveDie
+func (g *Game) Sell(itemType ItemType, face int) {
+	switch itemType {
+	case PlainD6:
+		g.Currencies[PlainBuck] += uint64(face)
+	case GoldD6:
+		g.Currencies[GoldBuck] += uint64(face)
+	}
+
+}
+
+// SellRandom sells a random dice in the warehouse
+func (g *Game) SellRandom() {
+	var item ItemType
+	var face int
+
+	// Are there any dice to sell
+	if g.Warehouse.Count <= 0 {
+		return
+	}
+
+	pick := rand.Intn(g.Warehouse.TypeCount)
+	for pickItem := range g.Warehouse.Dice {
+		if pick == 0 {
+			item = pickItem
+			break
+		}
+		pick--
+	}
+
+	pick = rand.Intn(len(g.Warehouse.Dice[item]))
+	for pickFace := range g.Warehouse.Dice[item] {
+		if pick == 0 {
+			face = pickFace
+			break
+		}
+		pick--
+	}
+
+	if !g.Warehouse.RemoveDie(item, face) {
+		g.SellRandom()
+		return
+	}
+
+	g.Sell(item, face)
+	g.Warehouse.RemoveDie(item, face)
 }
