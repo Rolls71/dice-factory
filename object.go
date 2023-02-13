@@ -25,10 +25,10 @@ const (
 	Upgrader                // Upgrades items
 )
 
-type ObjectFacing int
+type CardinalDir int
 
 const (
-	South ObjectFacing = iota
+	South CardinalDir = iota
 	West
 	North
 	East
@@ -36,10 +36,10 @@ const (
 
 type Object struct {
 	Object ObjectType
-	X      int          // tile coord
-	Y      int          // tile coord
-	ID     uint64       // unique generated identifier
-	Facing ObjectFacing // default South
+	X      int         // tile coord
+	Y      int         // tile coord
+	ID     uint64      // unique generated identifier
+	Facing CardinalDir // default South
 
 	uiPosition   int  // stores position of ui objects
 	isDragged    bool // default false
@@ -80,8 +80,8 @@ func (g *Game) IsItemMoveable(object *Object) (bool, *Object) {
 	}
 
 	// is there an item targeting the neighbor?
-	isItem, item := g.GetItemTargeting(neighbor)
-	if isItem && item.Item != Truck {
+	isItem, _ := g.GetItemTargeting(neighbor)
+	if isItem {
 		return false, neighbor
 	}
 
@@ -136,7 +136,7 @@ func (g *Game) UpdateObjects() {
 			g.MoveItemOn(object)
 		case Collector:
 			isItemOn, item := g.IsItemOn(object)
-			if isItemOn && item.Item != Truck {
+			if isItemOn {
 				g.SellDie(item.Item, item.Value())
 				delete(g.Items, item.ID)
 			}
@@ -206,16 +206,15 @@ func (g *Game) NewObject(objectType ObjectType, imageName string) {
 func (g *Game) SpawnObject(
 	objectType ObjectType,
 	x, y int,
-	facing ObjectFacing,
+	facing CardinalDir,
 ) *Object {
 	object := Object{
 		Object: objectType,
+		ID:     g.NextID(),
+		X:      x,
+		Y:      y,
+		Facing: facing,
 	}
-	object.ID = g.NextID()
-	object.X = x
-	object.Y = y
-	object.Facing = facing
-
 	g.ObjectCount[objectType] += 1
 	g.UnlockObject(objectType)
 

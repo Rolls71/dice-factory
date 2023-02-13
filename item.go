@@ -17,10 +17,7 @@ type ItemType int
 const (
 	Plain ItemType = iota
 	Gold
-	Truck
 )
-
-const truckSpeed float64 = float64(tileSize)
 
 const (
 	d6Min          int    = 1
@@ -90,31 +87,17 @@ func (i *Item) Step(speed float64) {
 // depending on their type. Each Item type may have different functionality.
 func (g *Game) UpdateItems() {
 	for _, item := range g.Items {
-		switch item.Item {
-		case Truck:
-			// has item reached target position?
-			if item.X == ToReal(item.TargetX) &&
-				item.Y == ToReal(item.TargetY) {
-				isTarget, target := g.GetObjectAt(item.TargetX, item.TargetY)
-				if isTarget {
-					target.isCollecting = true
-				}
-				continue
-			}
-			g.Items[item.ID].Step(truckSpeed)
-		default:
-			isObject, _ := g.GetObjectAt(item.TargetX, item.TargetY)
-			if !isObject {
-				delete(g.Items, item.ID)
-				continue
-			}
-			// has item reached target position?
-			if item.X == ToReal(item.TargetX) &&
-				item.Y == ToReal(item.TargetY) {
-				continue
-			}
-			g.Items[item.ID].Step(conveyorSpeed)
+		isObject, _ := g.GetObjectAt(item.TargetX, item.TargetY)
+		if !isObject {
+			delete(g.Items, item.ID)
+			continue
 		}
+		// has item reached target position?
+		if item.X == ToReal(item.TargetX) &&
+			item.Y == ToReal(item.TargetY) {
+			continue
+		}
+		g.Items[item.ID].Step(conveyorSpeed)
 	}
 }
 
@@ -132,22 +115,17 @@ func (g *Game) NewItem(itemType ItemType, imageName string) {
 // SpawnItem will create an instance of an Item in the set.
 // The Item's position and Target position will be set to that of the creator.
 func (g *Game) SpawnItem(itemType ItemType, creator *Object) *Item {
-	item := &Item{}
 	x, y := creator.X, creator.Y
-	item.ID = g.NextID()
-	item.Item = itemType
-	switch itemType {
-	case Truck:
-		item.X = ToReal(0)
-		item.Y = ToReal(y)
-	default:
-		item.Roll()
-		item.X = ToReal(x)
-		item.Y = ToReal(y)
 
+	item := &Item{
+		X:       ToReal(x),
+		Y:       ToReal(y),
+		ID:      g.NextID(),
+		Item:    itemType,
+		TargetX: x,
+		TargetY: y,
 	}
-	item.TargetX = x
-	item.TargetY = y
+	item.Roll()
 
 	g.Items[item.ID] = item
 	return item
@@ -177,36 +155,24 @@ func (g *Game) DrawItems(screen *ebiten.Image) {
 	}
 
 	sort.SliceStable(itemArray, func(i, j int) bool {
-		if itemArray[i].Item == Truck && itemArray[j].Item != Truck {
-			return false
-		} else {
-			return itemArray[i].ID > itemArray[j].ID
-		}
+		return itemArray[i].ID > itemArray[j].ID
 	})
 
 	for _, item := range itemArray {
 		img := g.itemImages[item.Item]
 		options := &ebiten.DrawImageOptions{}
-		switch item.Item {
-		case Truck:
-			img = g.itemImages[Truck]
-			options.GeoM.Scale(float64(tileSize*4)/float64(img.Bounds().Dx()),
-				float64(tileSize*2)/float64(img.Bounds().Dy()))
-			options.GeoM.Translate(item.X-float64(tileSize*3), item.Y)
-		default:
-			itemIndex := (item.Face - 1) * img.Bounds().Dy()
-			img = img.SubImage(image.Rect(
-				itemIndex,
-				0,
-				itemIndex+img.Bounds().Dy(),
-				img.Bounds().Dy())).(*ebiten.Image)
-			options.GeoM.Scale(float64(tileSize)/float64(img.Bounds().Dx()),
-				float64(tileSize)/float64(img.Bounds().Dy()))
-			options.GeoM.Translate(item.X, item.Y)
+		itemIndex := (item.Face - 1) * img.Bounds().Dy()
+		img = img.SubImage(image.Rect(
+			itemIndex,
+			0,
+			itemIndex+img.Bounds().Dy(),
+			img.Bounds().Dy())).(*ebiten.Image)
+		options.GeoM.Scale(float64(tileSize)/float64(img.Bounds().Dx()),
+			float64(tileSize)/float64(img.Bounds().Dy()))
+		options.GeoM.Translate(item.X, item.Y)
 
-			if item.Face == 0 {
-				log.Fatal("Error: Item has no set face")
-			}
+		if item.Face == 0 {
+			log.Fatal("Error: Item has no set face")
 		}
 		screen.DrawImage(img, options)
 	}

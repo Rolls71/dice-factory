@@ -85,7 +85,6 @@ func (g *Game) InitImages() {
 	//initialise items
 	g.NewItem(Plain, "d6.png")
 	g.NewItem(Gold, "gold_d6.png")
-	g.NewItem(Truck, "truck.png")
 }
 
 // NewGame constructs and returns a Game struct.
@@ -132,49 +131,12 @@ func NewGame() *Game {
 	builder := game.SpawnObject(Builder, 6, 4, South)
 	game.SpawnObject(ConveyorBelt, 6, 5, West)
 
-	collector := game.SpawnObject(Collector, 5, 5, South)
+	game.SpawnObject(Collector, 5, 5, South)
 	game.SpawnObject(Collector, 5, 6, South)
-	game.SpawnItem(Truck, collector)
-	//game.Storages[Truck1] = &NewStorage(Truck1, 10, 1)
+	//game.SpawnTruck({collector1, collector2}, enterPos, collectPos, exitPos)
+	//	inside >>> game.Storages[Truck.ID] = &NewStorage(TruckTrailer, 10, 1)
 
 	game.SpawnItem(Plain, builder)
-
-	/* TEST OBJECTS
-	// builders
-	builder1 := game.SpawnObject(Builder, 2, 2, South)
-	builder2 := game.SpawnObject(Builder, 4, 2, South)
-	builder3 := game.SpawnObject(Builder, 6, 2, South)
-
-	// builder extensions
-	game.SpawnObject(ConveyorBelt, 2, 3, South)
-	game.SpawnObject(ConveyorBelt, 4, 3, South)
-	game.SpawnObject(ConveyorBelt, 6, 3, South)
-
-	// collecting east belt
-	game.SpawnObject(Upgrader, 2, 4, East)
-	game.SpawnObject(ConveyorBelt, 3, 4, East)
-	game.SpawnObject(ConveyorBelt, 4, 4, East)
-	game.SpawnObject(ConveyorBelt, 5, 4, East)
-	game.SpawnObject(ConveyorBelt, 6, 4, East)
-
-	// connecting south belt
-	game.SpawnObject(ConveyorBelt, 7, 4, South)
-	game.SpawnObject(ConveyorBelt, 7, 5, South)
-	game.SpawnObject(ConveyorBelt, 7, 6, South)
-
-	// cube
-	game.SpawnObject(ConveyorBelt, 7, 7, South)
-	game.SpawnObject(ConveyorBelt, 7, 8, South)
-	game.SpawnObject(ConveyorBelt, 7, 9, West)
-	game.SpawnObject(ConveyorBelt, 6, 9, West)
-	game.SpawnObject(ConveyorBelt, 5, 9, North)
-	game.SpawnObject(ConveyorBelt, 5, 8, North)
-	game.SpawnObject(ConveyorBelt, 5, 7, East)
-	game.SpawnObject(Collector, 6, 7, East)
-
-	game.SpawnItem(PlainD6, builder1)
-	game.SpawnItem(PlainD6, builder2)
-	game.SpawnItem(PlainD6, builder3)*/
 
 	return &game
 }

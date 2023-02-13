@@ -36,7 +36,7 @@ func (g *Game) Pay(item ItemType, value uint64) bool {
 }
 
 // Buy will attempt to Pay for an object and spawn it if successful
-func (g *Game) Buy(object ObjectType, x, y int, objectFacing ObjectFacing) {
+func (g *Game) Buy(object ObjectType, x, y int, objectFacing CardinalDir) {
 	if g.Pay(g.Cost(object)) {
 		g.SpawnObject(object, x, y, objectFacing)
 	}
