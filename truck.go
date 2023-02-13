@@ -95,6 +95,8 @@ func (g *Game) UpdateTrucks() {
 					truck.Width,
 					truck.Height,
 				)
+				// Load trucks contents into Warehouse
+				println(g.Warehouse.Load(truck.Storage))
 				// Delete old version of truck
 				delete(g.Trucks, truck.ID)
 			}

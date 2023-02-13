@@ -138,7 +138,14 @@ func (g *Game) UpdateObjects() {
 		case Collector:
 			isItemOn, item := g.IsItemOn(object)
 			if isItemOn {
-				g.SellDie(item.Item, item.Value())
+				for _, truck := range g.Trucks {
+					for _, collector := range truck.Collectors {
+						if object.ID == collector.ID {
+							truck.Storage.StoreDie(item.Item, item.Face)
+							break
+						}
+					}
+				}
 				delete(g.Items, item.ID)
 			}
 		case Upgrader:

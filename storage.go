@@ -56,6 +56,26 @@ func (s *Storage) StoreDie(item ItemType, face int) bool {
 	return false
 }
 
+// StoreDie adds an amount of dice of given type to storage.
+// Returns false if sum is not less than capacity or the type limit is reached.
+func (s *Storage) StoreDice(item ItemType, face int, count uint64) bool {
+	if s.Count >= s.Capacity {
+		return false
+	}
+	_, exists := s.Dice[item]
+	if exists {
+		s.Dice[item][face] += count
+		s.Count += count
+		return true
+	} else if s.TypeLimit == 0 || s.TypeCount <= s.TypeLimit {
+		s.Dice[item] = map[int]uint64{face: count}
+		s.Count += count
+		s.TypeCount++
+		return true
+	}
+	return false
+}
+
 // RemoveDie removes a die from a storage. Should not be used by trucks,
 // as it will not reduce the TypeCount
 func (s *Storage) RemoveDie(item ItemType, face int) bool {
@@ -79,6 +99,16 @@ func (s *Storage) RemoveDie(item ItemType, face int) bool {
 
 // Load adds all the dice in given storage to self.
 // Returns false if the added dice would exceed the capacity or type limit.
-func (s *Storage) Load(storage Storage) bool {
-	return false
+func (s *Storage) Load(storage *Storage) bool {
+
+	if storage.Count+s.Count > s.Capacity {
+		return false
+	}
+
+	for diceType, dice := range storage.Dice {
+		for face, count := range dice {
+			s.StoreDice(diceType, face, count)
+		}
+	}
+	return true
 }

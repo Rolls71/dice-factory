@@ -58,7 +58,8 @@ type Game struct {
 	Currencies  map[ItemType]uint64         // Stores different currencies
 	Storages    map[uint64]*Storage         // Stores a list of trucks and warehouses
 	Trucks      map[uint64]*Truck
-	ID          uint64 // Stores id of last item/object made.
+	Warehouse   *Storage // Stores the main storage stuct
+	ID          uint64   // Stores id of last item/object made.
 
 	ticks      uint64 // Stores tick count
 	isDragging bool   // Is an Object being dragged
@@ -106,6 +107,8 @@ func NewGame() *Game {
 		Storages:    map[uint64]*Storage{},
 		Trucks:      map[uint64]*Truck{},
 	}
+
+	game.Warehouse = game.NewStorage(Warehouse, 1000, 0)
 
 	// set up tile stage
 	game.TileStage = [stageSizeY][stageSizeX]int{ /*
