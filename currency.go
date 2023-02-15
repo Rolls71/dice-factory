@@ -70,11 +70,12 @@ func (g *Game) SellRandom() {
 	var item ItemType
 	var face int
 
-	// Are there any dice to sell
+	// are there any dice to sell
 	if g.Warehouse.Count <= 0 {
 		return
 	}
 
+	// pick a type
 	pick := rand.Intn(g.Warehouse.TypeCount)
 	for pickItem := range g.Warehouse.Dice {
 		if pick == 0 {
@@ -84,6 +85,7 @@ func (g *Game) SellRandom() {
 		pick--
 	}
 
+	// pick a face
 	pick = rand.Intn(len(g.Warehouse.Dice[item]))
 	for pickFace := range g.Warehouse.Dice[item] {
 		if pick == 0 {
@@ -93,11 +95,11 @@ func (g *Game) SellRandom() {
 		pick--
 	}
 
+	// attempt to remove that Die
 	if !g.Warehouse.RemoveDie(item, face) {
 		g.SellRandom()
 		return
 	}
 
 	g.Sell(item, face)
-	g.Warehouse.RemoveDie(item, face)
 }
