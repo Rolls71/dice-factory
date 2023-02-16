@@ -79,7 +79,7 @@ func (g *Game) UpdateTrucks() {
 
 		// Step truck, and on the last frame enable collectors if arriving
 		if truck.Step() {
-			if !truck.IsExiting {
+			if !truck.IsExiting && truck.PercentComplete == 1 {
 				for _, collector := range truck.Collectors {
 					collector.IsCollecting = true
 				}
