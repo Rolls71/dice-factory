@@ -76,7 +76,7 @@ func (g *Game) SellRandom() {
 	}
 
 	// pick a type
-	pick := rand.Intn(g.Warehouse.TypeCount)
+	pick := rand.Intn(len(g.Warehouse.Dice))
 	for pickItem := range g.Warehouse.Dice {
 		if pick == 0 {
 			item = pickItem

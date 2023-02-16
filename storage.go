@@ -47,7 +47,7 @@ func (s *Storage) StoreDie(item ItemType, face int) bool {
 		s.Dice[item][face]++
 		s.Count++
 		return true
-	} else if s.TypeLimit == 0 || s.TypeCount <= s.TypeLimit {
+	} else if s.TypeLimit == 0 || s.TypeCount < s.TypeLimit {
 		s.Dice[item] = map[int]uint64{face: 1}
 		s.Count++
 		s.TypeCount++
@@ -67,7 +67,7 @@ func (s *Storage) StoreDice(item ItemType, face int, count uint64) bool {
 		s.Dice[item][face] += count
 		s.Count += count
 		return true
-	} else if s.TypeLimit == 0 || s.TypeCount <= s.TypeLimit {
+	} else if s.TypeLimit == 0 || s.TypeCount < s.TypeLimit {
 		s.Dice[item] = map[int]uint64{face: count}
 		s.Count += count
 		s.TypeCount++
@@ -83,31 +83,37 @@ func (s *Storage) RemoveDie(item ItemType, face int) bool {
 		return false
 	}
 
+	// does item type exist?
 	dice, exists := s.Dice[item]
-	if exists {
-		_, exists = dice[face]
-		if exists {
-			if dice[face] > 1 {
-				s.Dice[item][face]--
-				s.Count--
-				return true
-			} else if dice[face] == 1 {
-				s.Dice[item][face]--
-				s.Count--
-				delete(s.Dice[item], face)
-				return true
-			}
-		}
-		if len(s.Dice[item]) == 0 {
-			s.TypeCount--
-			delete(s.Dice, item)
-		}
+	if !exists {
+		return false
 	}
-	return false
+
+	// does face exist?
+	_, exists = dice[face]
+	if !exists {
+		return false
+	}
+
+	if dice[face] > 1 {
+		s.Dice[item][face]--
+		s.Count--
+		return true
+	}
+
+	s.Dice[item][face]--
+	s.Count--
+	delete(s.Dice[item], face)
+	if len(s.Dice[item]) <= 0 {
+		s.TypeCount--
+		delete(s.Dice, item)
+	}
+	return true
 }
 
 // Load adds all the dice in given storage to self.
-// Returns false if the added dice would exceed the capacity or type limit.
+// Returns false if the added dice would exceed the capacity
+// Does not currently check type limit
 func (s *Storage) Load(storage *Storage) bool {
 
 	if storage.Count+s.Count > s.Capacity {

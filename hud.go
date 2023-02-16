@@ -44,16 +44,16 @@ func (g *Game) SpawnUIObject(
 func (g *Game) DrawHUD(screen *ebiten.Image) {
 	g.DrawHotbar(screen)
 
-	string := fmt.Sprintf("PlainBucks: %d\n", g.Currencies[PlainBuck])
-
-	string += fmt.Sprintf("Warehouse Dice: %d\n", g.Warehouse.Count)
+	printString := fmt.Sprintf("PlainBucks: %d\n", g.Currencies[PlainBuck])
+	printString += fmt.Sprintf("Warehouse Dice: %d\n", g.Warehouse.Count)
+	printString += fmt.Sprintf("Warehouse Types: %d\n", g.Warehouse.TypeCount)
 	_, val := g.Cost(ConveyorBelt)
-	string += fmt.Sprintf("Conveyor Belt: %d\n", val)
+	printString += fmt.Sprintf("Conveyor Belt: %d\n", val)
 	_, val = g.Cost(Builder)
-	string += fmt.Sprintf("Builder: %d\n", val)
+	printString += fmt.Sprintf("Builder: %d\n", val)
 	_, val = g.Cost(Upgrader)
-	string += fmt.Sprintf("Upgrader: %d\n", val)
-	ebitenutil.DebugPrint(screen, string)
+	printString += fmt.Sprintf("Upgrader: %d\n", val)
+	ebitenutil.DebugPrint(screen, printString)
 }
 
 // DrawHotbar draws objects in the UIObjects array
