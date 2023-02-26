@@ -1,4 +1,4 @@
-package main
+package dicefactory
 
 import (
 	"fmt"
@@ -91,10 +91,10 @@ func (g *Game) DrawHUD(screen *ebiten.Image) {
 
 // DrawHotbar draws objects in the UIObjects array
 func (g Game) DrawHotbar(screen *ebiten.Image) {
-	hotbar := ebiten.NewImage(screenWidth, lowerHUDHeight)
+	hotbar := ebiten.NewImage(ScreenWidth, lowerHUDHeight)
 	hotbar.Fill(opaqueGrey)
 	options := &ebiten.DrawImageOptions{}
-	options.GeoM.Translate(0, float64(screenHeight-lowerHUDHeight))
+	options.GeoM.Translate(0, float64(ScreenHeight-lowerHUDHeight))
 	screen.DrawImage(hotbar, options)
 
 	var onTop *ebiten.Image
@@ -110,10 +110,10 @@ func (g Game) DrawHotbar(screen *ebiten.Image) {
 			onTop = img
 			topOptions = options
 		} else {
-			object.uiPosition = index*(tileSize+hotbarSpacing) + (screenWidth-len(g.UIObjects)*(tileSize+hotbarSpacing))/2
+			object.uiPosition = index*(tileSize+hotbarSpacing) + (ScreenWidth-len(g.UIObjects)*(tileSize+hotbarSpacing))/2
 			options.GeoM.Translate(
 				float64(object.uiPosition),
-				float64(screenHeight-tileSize-hotbarSpacing))
+				float64(ScreenHeight-tileSize-hotbarSpacing))
 			screen.DrawImage(img, options)
 		}
 	}

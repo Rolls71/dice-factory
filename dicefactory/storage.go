@@ -1,4 +1,4 @@
-package main
+package dicefactory
 
 type StorageType int
 

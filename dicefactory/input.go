@@ -1,4 +1,4 @@
-package main
+package dicefactory
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
@@ -16,9 +16,9 @@ func GetCursorCoordinates() (int, int) {
 // IsInGameArea returns true if the coordinate is within the games boundaries
 func IsInGameArea(x, y int) bool {
 	return (x > 0 &&
-		x < screenWidth &&
+		x < ScreenWidth &&
 		y > 0 &&
-		y < screenHeight-lowerHUDHeight)
+		y < ScreenHeight-lowerHUDHeight)
 }
 
 // UpdateInput runs all major input functions.

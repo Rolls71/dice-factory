@@ -1,4 +1,4 @@
-package main
+package dicefactory
 
 import (
 	_ "image/png"
