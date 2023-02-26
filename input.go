@@ -78,14 +78,16 @@ func (g *Game) onDragStart(mouseButton ebiten.MouseButton) {
 func (g *Game) onDragEnd(mouseButton ebiten.MouseButton) {
 	if inpututil.IsMouseButtonJustReleased(mouseButton) &&
 		g.isDragging {
-		x, y := ebiten.CursorPosition()
-		isObject, _ := g.GetObjectAt(x, y)
+		pixelX, pixelY := ebiten.CursorPosition()
+		tileX := pixelX / tileSize
+		tileY := pixelY / tileSize
+		isObject, _ := g.GetObjectAt(tileX, tileY)
 		for _, object := range g.UIObjects {
 			if object.isDragged {
 				object.isDragged = false
 				g.isDragging = false
-				if !isObject && IsInGameArea(x, y) {
-					g.Buy(object.Object, x/tileSize, y/tileSize, South)
+				if !isObject && IsInGameArea(pixelX, pixelY) {
+					g.Buy(object.Object, pixelX/tileSize, pixelY/tileSize, South)
 				}
 				return
 			}
@@ -94,9 +96,9 @@ func (g *Game) onDragEnd(mouseButton ebiten.MouseButton) {
 			if object.isDragged {
 				object.isDragged = false
 				g.isDragging = false
-				if !isObject && IsInGameArea(x, y) {
-					object.X = x / tileSize
-					object.Y = y / tileSize
+				if !isObject && IsInGameArea(pixelX, pixelY) {
+					object.X = pixelX / tileSize
+					object.Y = pixelY / tileSize
 				}
 				return
 			}
