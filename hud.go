@@ -14,7 +14,7 @@ const (
 	hotbarSpacing  = 5
 )
 
-var darkGrey color.RGBA = color.RGBA{0x55, 0x55, 0x55, 0xff}
+var opaqueGrey color.RGBA = color.RGBA{0x55, 0x55, 0x55, 0x99}
 
 // UnlockObject attempts to add an object to a hotbar if it has a specific count
 func (g *Game) UnlockObject(objectType ObjectType) {
@@ -44,22 +44,55 @@ func (g *Game) SpawnUIObject(
 func (g *Game) DrawHUD(screen *ebiten.Image) {
 	g.DrawHotbar(screen)
 
-	printString := fmt.Sprintf("PlainBucks: %d\n", g.Currencies[PlainBuck])
-	printString += fmt.Sprintf("Warehouse Dice: %d\n", g.Warehouse.Count)
-	printString += fmt.Sprintf("Warehouse Types: %d\n", g.Warehouse.TypeCount)
+	printString := ""
+
+	if g.Currencies[PlainBuck] > 0 {
+		printString += fmt.Sprintf("PlainBucks: %d\n", g.Currencies[PlainBuck])
+	}
+	if g.Currencies[GoldBuck] > 0 {
+		printString += fmt.Sprintf("GoldBucks: %d\n", g.Currencies[GoldBuck])
+	}
+	if g.Currencies[PlainBuck] > 0 || g.Currencies[GoldBuck] > 0 {
+		printString += "\n"
+	}
 	_, val := g.Cost(ConveyorBelt)
-	printString += fmt.Sprintf("Conveyor Belt: %d\n", val)
+	printString += fmt.Sprintf("Conveyor Belt: %d PlainBucks\n", val)
 	_, val = g.Cost(Builder)
-	printString += fmt.Sprintf("Builder: %d\n", val)
-	_, val = g.Cost(Upgrader)
-	printString += fmt.Sprintf("Upgrader: %d\n", val)
+	printString += fmt.Sprintf("Builder: %d PlainBucks\n", val)
+
+	if len(g.UIObjects) > 2 {
+		_, val = g.Cost(Upgrader)
+		printString += fmt.Sprintf("Upgrader: %d PlainBucks\n", val)
+	}
+
+	if g.Warehouse.Count > 0 {
+		printString += "\n"
+		printString += fmt.Sprintf("Warehouse Dice: %d/%d\n", g.Warehouse.Count, g.Warehouse.Capacity)
+		printString += fmt.Sprintf("Dice Sell Rate: 1 Dice/%d secs\n", sellRate)
+	}
+
+	val = 0
+	for id := range g.Trucks {
+		if id > val {
+			val = id
+		}
+	}
+	printString += "\n"
+	printString += fmt.Sprintf("Dice Stored in Truck: %d/%d\n", g.Trucks[val].Storage.Count, g.Trucks[val].Storage.Capacity)
+	for itemType := range g.Trucks[val].Storage.Dice {
+		printString += fmt.Sprintf("Type Stored in Truck: %s\n", itemType.String())
+	}
+	if g.Trucks[val].Storage.Count >= g.Trucks[val].Storage.Capacity {
+		printString += "Click truck to deliver dice to warehouse"
+	}
+
 	ebitenutil.DebugPrint(screen, printString)
 }
 
 // DrawHotbar draws objects in the UIObjects array
 func (g Game) DrawHotbar(screen *ebiten.Image) {
 	hotbar := ebiten.NewImage(screenWidth, lowerHUDHeight)
-	hotbar.Fill(darkGrey)
+	hotbar.Fill(opaqueGrey)
 	options := &ebiten.DrawImageOptions{}
 	options.GeoM.Translate(0, float64(screenHeight-lowerHUDHeight))
 	screen.DrawImage(hotbar, options)

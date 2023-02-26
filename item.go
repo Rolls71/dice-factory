@@ -19,6 +19,17 @@ const (
 	GoldD6
 )
 
+func (i ItemType) String() string {
+	switch i {
+	case PlainD6:
+		return "Plain"
+	case GoldD6:
+		return "Gold"
+	default:
+		return ""
+	}
+}
+
 const (
 	d6Min          int    = 1
 	d6Max          int    = 6
